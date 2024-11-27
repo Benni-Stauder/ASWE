@@ -12,9 +12,6 @@ public class ProjectHandling {
 		JFrame primaryFrame = PackageCalculator.getInstance().getPrimaryFrame();
 		primaryFrame.setTitle(PackageCalculator.AppName + " – " + rootPath);
 
-		// Load tree in explorer
-		PackageCalculator.getInstance().explorerArea.loadNewTree(rootPath);
-
 		// Remember open project
 		PackageCalculator.getInstance().rootPath = rootPath;
 	}

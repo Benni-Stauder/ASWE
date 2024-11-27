@@ -2,8 +2,22 @@ package control;
 
 import data.Packet;
 
+/**
+ * Die Klasse Calculator berechnet die Versandkosten basierend auf den Dimensionen und dem Gewicht eines Pakets.
+ * Sie validiert die Eingabewerte und berücksichtigt dabei die vorgegebenen Versandkostenregeln.
+ *
+ * @author Benni
+ * @version 1.1
+ */
 public class Calculator {
 
+	/**
+	 * Berechnet die Versandkosten eines Pakets basierend auf Dimensionen und Gewicht.
+	 *
+	 * @param pack Das Paket mit Länge, Breite, Höhe und Gewicht.
+	 * @return Die berechneten Versandkosten.
+	 * @throws IllegalArgumentException Wenn ungültige Eingaben gemacht werden.
+	 */
 	public double calcShippingCosts(Packet pack) {
 		// Defensiv: Prüfen auf ungültige Eingaben
 		if (pack.length <= 0 || pack.width <= 0 || pack.height <= 0 || pack.weight <= 0) {
@@ -23,9 +37,9 @@ public class Calculator {
 			return 3.89;
 		} else if (pack.length <= 600 && pack.width <= 300 && pack.height <= 150 && pack.weight <= 2000) {
 			return 4.39;
-		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && girth <= 300 && pack.weight <= 5000) {
+		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 5000) {
 			return 5.89;
-		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && girth <= 300 && pack.weight <= 10000) {
+		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 10000) {
 			return 7.99;
 		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 31000) {
 			return 14.99;

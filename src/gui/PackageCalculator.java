@@ -17,7 +17,6 @@ public class PackageCalculator {
 
 	// GUI components
 	private JFrame primaryFrame;
-	public ExplorerArea explorerArea;
 	public CalculatorArea calculatorArea;
 	public InspectorArea inspectorArea;
 	public MessagesArea messagesArea;
@@ -33,7 +32,6 @@ public class PackageCalculator {
 
 	private PackageCalculator() {
 		// Initialize GUI components
-		explorerArea = new ExplorerArea();
 		calculatorArea = new CalculatorArea();
 		inspectorArea = new InspectorArea();
 		messagesArea = new MessagesArea();
@@ -57,7 +55,6 @@ public class PackageCalculator {
 
 		// Add a split pane for the main content area
 		JSplitPane horizontalSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		horizontalSplitPane.setLeftComponent(explorerArea);
 
 		JSplitPane verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		verticalSplitPane.setTopComponent(calculatorArea);
