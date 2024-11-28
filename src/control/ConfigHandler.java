@@ -3,8 +3,6 @@ package control;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -14,62 +12,64 @@ public class ConfigHandler {
 
     private static final String CONFIG_FILE = "config.properties";
     private List<ConfigEntryPanel> configEntries;
+    private JFrame configFrame;
+    private JPanel entryContainer;
 
     public ConfigHandler() {
         configEntries = new ArrayList<>();
     }
 
-    public void openConfigWindow() {
-        JFrame frame = new JFrame("Config Editor");
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setSize(600, 500);
+    public void openCreateConfigWindow() {
+        if (configFrame != null && configFrame.isVisible()) {
+            configFrame.toFront();
+            return;
+        }
+
+        configFrame = new JFrame("Create Config");
+        configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        configFrame.setSize(600, 600);
 
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BorderLayout());
 
-        JPanel entryPanel = new JPanel();
-        entryPanel.setLayout(new BoxLayout(entryPanel, BoxLayout.Y_AXIS));
-        entryPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
+        entryContainer = new JPanel();
+        entryContainer.setLayout(new BoxLayout(entryContainer, BoxLayout.Y_AXIS));
+        entryContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        JScrollPane scrollPane = new JScrollPane(entryPanel);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS);
+        JScrollPane scrollPane = new JScrollPane(entryContainer);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         // Add initial entry
-        addConfigEntry(entryPanel);
+        addConfigEntry();
 
-        JPanel buttonPanel = getJPanel(entryPanel);
-
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        frame.add(mainPanel);
-        frame.setVisible(true);
-    }
-
-    private JPanel getJPanel(JPanel entryPanel) {
         JButton addEntryButton = new JButton("Add Entry");
-        addEntryButton.addActionListener(e -> addConfigEntry(entryPanel));
+        addEntryButton.addActionListener(e -> addConfigEntry());
 
         JButton saveButton = new JButton("Save Config");
         saveButton.addActionListener(e -> saveConfigToFile());
 
-        JButton loadButton = new JButton("Load Config");
-        loadButton.addActionListener(e -> loadConfigFromFile(entryPanel));
-
-        JPanel buttonPanel = new JPanel();
-        buttonPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addEntryButton);
-        buttonPanel.add(loadButton);
         buttonPanel.add(saveButton);
-        return buttonPanel;
+
+        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        configFrame.add(mainPanel);
+        configFrame.setVisible(true);
     }
 
-    private void addConfigEntry(JPanel parentPanel) {
+    public void openLoadConfigWindow() {
+        loadConfigFromFile();
+    }
+
+    private void addConfigEntry() {
         ConfigEntryPanel entryPanel = new ConfigEntryPanel();
         configEntries.add(entryPanel);
-        parentPanel.add(entryPanel);
-        parentPanel.revalidate();
-        parentPanel.repaint();
+        entryContainer.add(entryPanel);
+        entryContainer.revalidate();
+        entryContainer.repaint();
     }
 
     private void saveConfigToFile() {
@@ -93,7 +93,7 @@ public class ConfigHandler {
         }
     }
 
-    private void loadConfigFromFile(JPanel parentPanel) {
+    private void loadConfigFromFile() {
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showOpenDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
@@ -101,8 +101,8 @@ public class ConfigHandler {
             try (InputStream inputStream = new FileInputStream(file)) {
                 Properties properties = new Properties();
                 properties.load(inputStream);
-                parentPanel.removeAll();
                 configEntries.clear();
+                entryContainer.removeAll(); // Clear the previous entries
                 int i = 0;
                 while (properties.containsKey("entry." + i + ".dimensions")) {
                     String dimensions = properties.getProperty("entry." + i + ".dimensions");
@@ -117,11 +117,11 @@ public class ConfigHandler {
                             price
                     );
                     configEntries.add(entry);
-                    parentPanel.add(entry);
+                    entryContainer.add(entry);
                     i++;
                 }
-                parentPanel.revalidate();
-                parentPanel.repaint();
+                entryContainer.revalidate();
+                entryContainer.repaint();
                 JOptionPane.showMessageDialog(null, "Config loaded successfully.");
             } catch (IOException | NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Error loading config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -141,7 +141,7 @@ public class ConfigHandler {
         }
 
         public ConfigEntryPanel(int length, int width, int height, int weight, double price) {
-            setLayout(new GridLayout(1, 5, 5, 5));
+            setLayout(new GridLayout(2, 5, 10, 10));
             setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
             lengthField = createField(String.valueOf(length));
@@ -164,7 +164,7 @@ public class ConfigHandler {
 
         private JTextField createField(String text) {
             JTextField field = new JTextField(text);
-            field.setPreferredSize(new Dimension(100, 25));
+            field.setPreferredSize(new Dimension(80, 25));
             return field;
         }
 

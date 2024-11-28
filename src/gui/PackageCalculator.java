@@ -11,16 +11,21 @@ public class PackageCalculator {
 
 	private static final String CONFIG_FILE = "config.properties";
 	private JLabel resultLabel;
+	private final ConfigHandler configHandler;
 
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new PackageCalculator().createAndShowGUI());
 	}
 
+	public PackageCalculator() {
+		this.configHandler = new ConfigHandler();
+	}
+
 	private void createAndShowGUI() {
 		JFrame frame = new JFrame("Package Cost Calculator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(500, 500);
-		frame.setMinimumSize(new Dimension(500, 500));
+		frame.setSize(500, 400);
+		frame.setMinimumSize(new Dimension(500, 400)); // Set minimum size for the window
 		frame.setLayout(new BorderLayout());
 
 		// ToolBar with styled buttons
@@ -119,6 +124,10 @@ public class PackageCalculator {
 		widthField.addActionListener(e -> resultLabel.setText(" "));
 		heightField.addActionListener(e -> resultLabel.setText(" "));
 		weightField.addActionListener(e -> resultLabel.setText(" "));
+
+		// Add actions to Config Menu items
+		loadConfigItem.addActionListener(e -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(e -> configHandler.openCreateConfigWindow());
 
 		frame.setVisible(true);
 	}
