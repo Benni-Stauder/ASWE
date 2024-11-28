@@ -18,7 +18,7 @@ public class Calculator {
 	 * @return Die berechneten Versandkosten.
 	 * @throws IllegalArgumentException Wenn ungültige Eingaben gemacht werden.
 	 */
-	public double calcShippingCosts(Packet pack) {
+	public static double calcShippingCosts(Packet pack) {
 		// Defensiv: Prüfen auf ungültige Eingaben
 		if (pack.length <= 0 || pack.width <= 0 || pack.height <= 0 || pack.weight <= 0) {
 			throw new IllegalArgumentException("Alle Dimensionen und das Gewicht müssen positiv sein.");
