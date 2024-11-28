@@ -24,7 +24,7 @@ public class ToolbarArea extends JPanel {
 		// Add action listeners
 		openProjectButton.addActionListener(e -> ProjectHandling.openProject());
 		newFileButton.addActionListener(e -> ProjectHandling.newFile());
-		infoButton.addActionListener(e -> showHelpDialog());
+		infoButton.addActionListener(e -> showInfoDialog());
 
 		// Add buttons to the toolbar
 		add(openProjectButton);
@@ -37,10 +37,10 @@ public class ToolbarArea extends JPanel {
 		add(infoButton);
 	}
 
-	private void showHelpDialog() {
+	private void showInfoDialog() {
 		JDialog dialog = new JDialog((Frame) null, "Info", true);
 		dialog.setLayout(new BorderLayout());
-		JLabel infoLabel = new JLabel("Package Calculator v0.3 \n (c) 2020 I. Borgisevic \n (c) 2024 B. Stauder", SwingConstants.CENTER);
+		JLabel infoLabel = new JLabel("Package Calculator v0.3 \n\n (c) 2024 Benni Stauder", SwingConstants.CENTER);
 		infoLabel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		dialog.add(infoLabel, BorderLayout.CENTER);
 		JButton closeButton = new JButton("Close");

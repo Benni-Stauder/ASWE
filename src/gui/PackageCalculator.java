@@ -18,9 +18,6 @@ public class PackageCalculator {
 	// GUI components
 	private JFrame primaryFrame;
 	public CalculatorArea calculatorArea;
-	public InspectorArea inspectorArea;
-	public MessagesArea messagesArea;
-	public StatusArea statusArea;
 	public ToolbarArea toolbarArea;
 
 	// Root path to the currently open project
@@ -33,9 +30,6 @@ public class PackageCalculator {
 	private PackageCalculator() {
 		// Initialize GUI components
 		calculatorArea = new CalculatorArea();
-		inspectorArea = new InspectorArea();
-		messagesArea = new MessagesArea();
-		statusArea = new StatusArea();
 		toolbarArea = new ToolbarArea();
 	}
 
@@ -58,15 +52,11 @@ public class PackageCalculator {
 
 		JSplitPane verticalSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		verticalSplitPane.setTopComponent(calculatorArea);
-		verticalSplitPane.setBottomComponent(messagesArea);
 
 		horizontalSplitPane.setRightComponent(verticalSplitPane);
 
 		// Add split pane to the center
 		mainPanel.add(horizontalSplitPane, BorderLayout.CENTER);
-
-		// Add status area to the bottom
-		mainPanel.add(statusArea, BorderLayout.SOUTH);
 
 		// Set up and display the main frame
 		primaryFrame.getContentPane().add(mainPanel);

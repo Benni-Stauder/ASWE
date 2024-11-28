@@ -9,18 +9,15 @@ import java.awt.*;
 public class CalculatorArea extends JPanel {
 
 	// Input fields
-	private JTextField lengthTextField = new JTextField(10);
-	private JTextField widthTextField = new JTextField(10);
-	private JTextField heightTextField = new JTextField(10);
-	private JTextField weightTextField = new JTextField(10);
+	private final JTextField lengthTextField = new JTextField(10);
+	private final JTextField widthTextField = new JTextField(10);
+	private final JTextField heightTextField = new JTextField(10);
+	private final JTextField weightTextField = new JTextField(10);
 
 	// Output label
-	private JLabel shippingCostLabel = new JLabel("?");
+	private final JLabel shippingCostLabel = new JLabel("?");
 
-	// Button
-	private JButton calcButton = new JButton("Calculate");
-
-	public CalculatorArea() {
+    public CalculatorArea() {
 		setLayout(new GridBagLayout());
 		GridBagConstraints gbc = new GridBagConstraints();
 		gbc.insets = new Insets(5, 5, 5, 5);
@@ -76,7 +73,9 @@ public class CalculatorArea extends JPanel {
 		add(shippingCostLabel, gbc);
 
 		gbc.gridx = 2;
-		add(calcButton, gbc);
+        // Button
+        JButton calcButton = new JButton("Calculate");
+        add(calcButton, gbc);
 
 		// Add action listener to calculate button
 		calcButton.addActionListener(e -> calcShippingCosts());
@@ -95,10 +94,10 @@ public class CalculatorArea extends JPanel {
 
 			// Perform calculation
 			Packet packet = new Packet(length, width, height, weight);
-			Double costs = calc.calcShippingCosts(packet);
+			double costs = calc.calcShippingCosts(packet);
 
 			// Show result
-			shippingCostLabel.setText(costs.toString());
+			shippingCostLabel.setText(Double.toString(costs));
 		} catch (NumberFormatException ex) {
 			JOptionPane.showMessageDialog(this, "Please enter valid numbers for all fields.", "Input Error", JOptionPane.ERROR_MESSAGE);
 		}
