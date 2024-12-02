@@ -1,6 +1,7 @@
 package control;
 
 import javax.swing.*;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.*;
@@ -11,9 +12,8 @@ import java.util.Properties;
 public class ConfigHandler {
 
     private static final String CONFIG_FILE = "config.properties";
-    private List<ConfigEntryPanel> configEntries;
+    private final List<ConfigEntry> configEntries;
     private JFrame configFrame;
-    private JPanel entryContainer;
 
     public ConfigHandler() {
         configEntries = new ArrayList<>();
@@ -27,33 +27,26 @@ public class ConfigHandler {
 
         configFrame = new JFrame("Create Config");
         configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        configFrame.setSize(600, 600);
+        configFrame.setSize(600, 400);
 
-        JPanel mainPanel = new JPanel();
-        mainPanel.setLayout(new BorderLayout());
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        entryContainer = new JPanel();
-        entryContainer.setLayout(new BoxLayout(entryContainer, BoxLayout.Y_AXIS));
-        entryContainer.setBorder(new EmptyBorder(10, 10, 10, 10));
+        ConfigTableModel tableModel = new ConfigTableModel(configEntries);
+        JTable configTable = new JTable(tableModel);
+        JScrollPane tableScrollPane = new JScrollPane(configTable);
 
-        JScrollPane scrollPane = new JScrollPane(entryContainer);
-        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-        scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-
-        // Add initial entry
-        addConfigEntry();
-
-        JButton addEntryButton = new JButton("Add Entry");
-        addEntryButton.addActionListener(e -> addConfigEntry());
+        JButton addButton = new JButton("Add Config");
+        addButton.addActionListener(e -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
         JButton saveButton = new JButton("Save Config");
-        saveButton.addActionListener(e -> saveConfigToFile());
+        saveButton.addActionListener(e -> saveConfigToFile(configTable));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.add(addEntryButton);
+        buttonPanel.add(addButton);
         buttonPanel.add(saveButton);
 
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         configFrame.add(mainPanel);
@@ -64,26 +57,18 @@ public class ConfigHandler {
         loadConfigFromFile();
     }
 
-    private void addConfigEntry() {
-        ConfigEntryPanel entryPanel = new ConfigEntryPanel();
-        configEntries.add(entryPanel);
-        entryContainer.add(entryPanel);
-        entryContainer.revalidate();
-        entryContainer.repaint();
-    }
-
-    private void saveConfigToFile() {
+    private void saveConfigToFile(JTable configTable) {
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showSaveDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try (OutputStream outputStream = new FileOutputStream(file)) {
                 Properties properties = new Properties();
-                for (int i = 0; i < configEntries.size(); i++) {
-                    ConfigEntryPanel entry = configEntries.get(i);
+                ConfigTableModel model = (ConfigTableModel) configTable.getModel();
+                for (int i = 0; i < model.getRowCount(); i++) {
                     properties.setProperty("entry." + i + ".dimensions",
-                            entry.getLength() + "x" + entry.getWidth() + "x" + entry.getHeight() + "x" + entry.getWeight());
-                    properties.setProperty("entry." + i + ".price", String.valueOf(entry.getPrice()));
+                            model.getValueAt(i, 0) + "x" + model.getValueAt(i, 1) + "x" + model.getValueAt(i, 2) + "x" + model.getValueAt(i, 3));
+                    properties.setProperty("entry." + i + ".price", String.valueOf(model.getValueAt(i, 4)));
                 }
                 properties.store(outputStream, "Package Configurations");
                 JOptionPane.showMessageDialog(null, "Config saved successfully.");
@@ -102,26 +87,21 @@ public class ConfigHandler {
                 Properties properties = new Properties();
                 properties.load(inputStream);
                 configEntries.clear();
-                entryContainer.removeAll(); // Clear the previous entries
                 int i = 0;
                 while (properties.containsKey("entry." + i + ".dimensions")) {
                     String dimensions = properties.getProperty("entry." + i + ".dimensions");
                     String[] parts = dimensions.split("x");
                     double price = Double.parseDouble(properties.getProperty("entry." + i + ".price"));
 
-                    ConfigEntryPanel entry = new ConfigEntryPanel(
+                    configEntries.add(new ConfigEntry(
                             Integer.parseInt(parts[0]),
                             Integer.parseInt(parts[1]),
                             Integer.parseInt(parts[2]),
                             Integer.parseInt(parts[3]),
                             price
-                    );
-                    configEntries.add(entry);
-                    entryContainer.add(entry);
+                    ));
                     i++;
                 }
-                entryContainer.revalidate();
-                entryContainer.repaint();
                 JOptionPane.showMessageDialog(null, "Config loaded successfully.");
             } catch (IOException | NumberFormatException e) {
                 JOptionPane.showMessageDialog(null, "Error loading config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -129,63 +109,129 @@ public class ConfigHandler {
         }
     }
 
-    private static class ConfigEntryPanel extends JPanel {
-        private final JTextField lengthField;
-        private final JTextField widthField;
-        private final JTextField heightField;
-        private final JTextField weightField;
-        private final JTextField priceField;
+    private static class ConfigTableModel extends AbstractTableModel {
 
-        public ConfigEntryPanel() {
-            this(0, 0, 0, 0, 0.0);
+        private final List<ConfigEntry> entries;
+        private final String[] columnNames = {"Length (mm)", "Width (mm)", "Height (mm)", "Weight (g)", "Price (€)"};
+
+        public ConfigTableModel(List<ConfigEntry> entries) {
+            this.entries = entries;
         }
 
-        public ConfigEntryPanel(int length, int width, int height, int weight, double price) {
-            setLayout(new GridLayout(2, 5, 10, 10));
-            setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-            lengthField = createField(String.valueOf(length));
-            widthField = createField(String.valueOf(width));
-            heightField = createField(String.valueOf(height));
-            weightField = createField(String.valueOf(weight));
-            priceField = createField(String.format("%.2f", price));
-
-            add(new JLabel("Length (mm):"));
-            add(lengthField);
-            add(new JLabel("Width (mm):"));
-            add(widthField);
-            add(new JLabel("Height (mm):"));
-            add(heightField);
-            add(new JLabel("Weight (g):"));
-            add(weightField);
-            add(new JLabel("Price (€):"));
-            add(priceField);
+        @Override
+        public int getRowCount() {
+            return entries.size();
         }
 
-        private JTextField createField(String text) {
-            JTextField field = new JTextField(text);
-            field.setPreferredSize(new Dimension(80, 25));
-            return field;
+        @Override
+        public int getColumnCount() {
+            return columnNames.length;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return columnNames[column];
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            ConfigEntry entry = entries.get(rowIndex);
+            return switch (columnIndex) {
+                case 0 -> entry.getLength();
+                case 1 -> entry.getWidth();
+                case 2 -> entry.getHeight();
+                case 3 -> entry.getWeight();
+                case 4 -> entry.getPrice();
+                default -> null;
+            };
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            ConfigEntry entry = entries.get(rowIndex);
+            switch (columnIndex) {
+                case 0: entry.setLength((Integer) aValue); break;
+                case 1: entry.setWidth((Integer) aValue); break;
+                case 2: entry.setHeight((Integer) aValue); break;
+                case 3: entry.setWeight((Integer) aValue); break;
+                case 4: entry.setPrice((Double) aValue); break;
+            }
+            fireTableCellUpdated(rowIndex, columnIndex);
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return true;
+        }
+
+        @Override
+        public Class<?> getColumnClass(int columnIndex) {
+            return switch (columnIndex) {
+                case 0, 1, 2, 3 -> Integer.class;
+                case 4 -> Double.class;
+                default -> Object.class;
+            };
+        }
+
+        public void addEntry(ConfigEntry entry) {
+            entries.add(entry);
+            fireTableRowsInserted(entries.size() - 1, entries.size() - 1);
+        }
+    }
+
+    private static class ConfigEntry {
+        private int length;
+        private int width;
+        private int height;
+        private int weight;
+        private double price;
+
+        public ConfigEntry(int length, int width, int height, int weight, double price) {
+            this.length = length;
+            this.width = width;
+            this.height = height;
+            this.weight = weight;
+            this.price = price;
         }
 
         public int getLength() {
-            return Integer.parseInt(lengthField.getText());
+            return length;
+        }
+
+        public void setLength(int length) {
+            this.length = length;
         }
 
         public int getWidth() {
-            return Integer.parseInt(widthField.getText());
+            return width;
+        }
+
+        public void setWidth(int width) {
+            this.width = width;
         }
 
         public int getHeight() {
-            return Integer.parseInt(heightField.getText());
+            return height;
+        }
+
+        public void setHeight(int height) {
+            this.height = height;
         }
 
         public int getWeight() {
-            return Integer.parseInt(weightField.getText());
+            return weight;
+        }
+
+        public void setWeight(int weight) {
+            this.weight = weight;
         }
 
         public double getPrice() {
-            return Double.parseDouble(priceField.getText());
+            return price;
+        }
+
+        public void setPrice(double price) {
+            this.price = price;
         }
     }
 }

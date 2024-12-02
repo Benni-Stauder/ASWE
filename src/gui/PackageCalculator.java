@@ -2,6 +2,8 @@ package gui;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
 import control.Calculator;
 import data.Packet;
@@ -24,52 +26,134 @@ public class PackageCalculator {
 	private void createAndShowGUI() {
 		JFrame frame = new JFrame("Package Cost Calculator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(500, 400);
-		frame.setMinimumSize(new Dimension(500, 400)); // Set minimum size for the window
+		frame.setSize(600, 450);
+		frame.setMinimumSize(new Dimension(600, 450));
 		frame.setLayout(new BorderLayout());
 
-		// ToolBar with styled buttons
+		// Add components to frame
+		JToolBar toolBar = createToolBar();
+		frame.add(toolBar, BorderLayout.NORTH);
+
+		JPanel inputPanel = createInputPanel();
+		frame.add(inputPanel, BorderLayout.CENTER);
+
+		frame.setVisible(true);
+	}
+
+	private JToolBar createToolBar() {
+		JToolBar toolBar = initializeToolBar();
+
+		JButton configButton = createToolbarButton("Config", "settings-icon.png", this::showConfigMenu);
+		JButton infoButton = createToolbarButton("Info", "info-icon.png", this::showPackageCosts);
+		JButton aboutButton = createToolbarButton("About", "about-icon.png", this::showAboutDialog);
+		JButton exitButton = createToolbarButton("Exit", "exit-icon.png", e -> System.exit(0));
+
+		toolBar.add(configButton);
+		toolBar.add(Box.createHorizontalStrut(10));
+		toolBar.add(infoButton);
+		toolBar.add(Box.createHorizontalStrut(10));
+		toolBar.add(aboutButton);
+		toolBar.add(Box.createHorizontalGlue());
+		toolBar.add(exitButton);
+
+		return toolBar;
+	}
+
+	private JToolBar initializeToolBar() {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
 		toolBar.setBackground(new Color(60, 63, 65));
+		toolBar.setLayout(new BoxLayout(toolBar, BoxLayout.X_AXIS));
+		return toolBar;
+	}
 
-		JButton configButton = createStyledButton("Config");
+	private JButton createToolbarButton(String text, String iconPath, ActionListener action) {
+		JButton button = new JButton(text, loadIcon(iconPath));
+		button.setFont(new Font("SansSerif", Font.BOLD, 14));
+		button.setBackground(new Color(30, 144, 255));
+		button.setForeground(Color.WHITE);
+		button.setFocusPainted(false);
+		button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
+		button.addActionListener(action);
+		return button;
+	}
+
+	private ImageIcon loadIcon(String iconPath) {
+		try {
+			return new ImageIcon(iconPath);
+		} catch (Exception e) {
+			System.err.println("Icon not found: " + iconPath);
+			return null;
+		}
+	}
+
+	private void showConfigMenu(ActionEvent e) {
 		JPopupMenu configMenu = new JPopupMenu();
 		JMenuItem loadConfigItem = new JMenuItem("Load Config");
-		JMenuItem createConfigItem = new JMenuItem("Create Config");
+		JMenuItem createConfigItem = new JMenuItem("Edit Config");
+
+		loadConfigItem.addActionListener(event -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(event -> configHandler.openCreateConfigWindow());
+
 		configMenu.add(loadConfigItem);
 		configMenu.add(createConfigItem);
-		configButton.addActionListener(e -> configMenu.show(configButton, 0, configButton.getHeight()));
 
-		JButton infoButton = createStyledButton("Info");
-		infoButton.addActionListener(e -> showPackageCosts());
+		JButton sourceButton = (JButton) e.getSource();
+		configMenu.show(sourceButton, 0, sourceButton.getHeight());
+	}
 
-		JButton aboutButton = createStyledButton("About");
-		aboutButton.addActionListener(e -> showAboutDialog());
+	private void showPackageCosts(ActionEvent e) {
+		JOptionPane.showMessageDialog(null, "Package Costs:\n(Not yet implemented)", "Info", JOptionPane.INFORMATION_MESSAGE);
+	}
 
-		// Exit Button
-		JButton exitButton = createStyledButton("Exit");
-		exitButton.addActionListener(e -> System.exit(0));
+	private void showAboutDialog(ActionEvent e) {
+		JOptionPane.showMessageDialog(null, "Package Cost Calculator\n© 2024 Benni", "About", JOptionPane.INFORMATION_MESSAGE);
+	}
 
-		toolBar.add(configButton);
-		toolBar.add(infoButton);
-		toolBar.add(aboutButton);
-		toolBar.add(Box.createHorizontalGlue()); // Push the exit button to the right
-		toolBar.add(exitButton);
-		frame.add(toolBar, BorderLayout.NORTH);
-
-		// Input Panel
+	private JPanel createInputPanel() {
 		JPanel inputPanel = new JPanel();
-		inputPanel.setLayout(new BoxLayout(inputPanel, BoxLayout.Y_AXIS));
+		inputPanel.setLayout(new GridBagLayout());
 		inputPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 		inputPanel.setBackground(new Color(245, 245, 245));
 
-		// Styled input fields
-		JTextField lengthField = createStyledTextField("Length (mm):");
-		JTextField widthField = createStyledTextField("Width (mm):");
-		JTextField heightField = createStyledTextField("Height (mm):");
-		JTextField weightField = createStyledTextField("Weight (g):");
+		GridBagConstraints gbc = new GridBagConstraints();
+		gbc.insets = new Insets(10, 10, 10, 10);
+		gbc.fill = GridBagConstraints.HORIZONTAL;
 
+		JTextField lengthField = addLabeledTextField(inputPanel, gbc, 0, "Length (mm):");
+		JTextField widthField = addLabeledTextField(inputPanel, gbc, 1, "Width (mm):");
+		JTextField heightField = addLabeledTextField(inputPanel, gbc, 2, "Height (mm):");
+		JTextField weightField = addLabeledTextField(inputPanel, gbc, 3, "Weight (g):");
+
+		JButton calculateButton = createCalculateButton(lengthField, widthField, heightField, weightField);
+		gbc.gridx = 0;
+		gbc.gridy = 4;
+		gbc.gridwidth = 2;
+		inputPanel.add(calculateButton, gbc);
+
+		resultLabel = new JLabel(" ");
+		resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		resultLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+		resultLabel.setForeground(new Color(34, 139, 34));
+		gbc.gridy = 5;
+		inputPanel.add(resultLabel, gbc);
+
+		return inputPanel;
+	}
+
+	private JTextField addLabeledTextField(JPanel panel, GridBagConstraints gbc, int row, String labelText) {
+		gbc.gridx = 0;
+		gbc.gridy = row;
+		panel.add(new JLabel(labelText), gbc);
+
+		gbc.gridx = 1;
+		JTextField textField = new JTextField(15);
+		panel.add(textField, gbc);
+
+		return textField;
+	}
+
+	private JButton createCalculateButton(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		JButton calculateButton = new JButton("Calculate Price");
 		calculateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
 		calculateButton.setBackground(new Color(30, 144, 255));
@@ -78,27 +162,6 @@ public class PackageCalculator {
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		resultLabel = new JLabel(" ");
-		resultLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		resultLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
-		resultLabel.setForeground(new Color(34, 139, 34));
-
-		// Adding components to the input panel
-		inputPanel.add(lengthField);
-		inputPanel.add(Box.createVerticalStrut(10));
-		inputPanel.add(widthField);
-		inputPanel.add(Box.createVerticalStrut(10));
-		inputPanel.add(heightField);
-		inputPanel.add(Box.createVerticalStrut(10));
-		inputPanel.add(weightField);
-		inputPanel.add(Box.createVerticalStrut(20));
-		inputPanel.add(calculateButton);
-		inputPanel.add(Box.createVerticalStrut(20));
-		inputPanel.add(resultLabel);
-
-		frame.add(inputPanel, BorderLayout.CENTER);
-
-		// Action Listener for Calculate Button
 		calculateButton.addActionListener(e -> {
 			try {
 				int length = Integer.parseInt(lengthField.getText());
@@ -111,61 +174,14 @@ public class PackageCalculator {
 
 				resultLabel.setText(String.format("Shipping Cost: %.2f €", price));
 			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(frame, "Please enter valid numerical values.", "Input Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, "Please enter valid numerical values.", "Input Error", JOptionPane.ERROR_MESSAGE);
 				resultLabel.setText(" ");
 			} catch (IllegalArgumentException ex) {
-				JOptionPane.showMessageDialog(frame, ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
 				resultLabel.setText(" ");
 			}
 		});
 
-		// Clear the result label when input fields are modified
-		lengthField.addActionListener(e -> resultLabel.setText(" "));
-		widthField.addActionListener(e -> resultLabel.setText(" "));
-		heightField.addActionListener(e -> resultLabel.setText(" "));
-		weightField.addActionListener(e -> resultLabel.setText(" "));
-
-		// Add actions to Config Menu items
-		loadConfigItem.addActionListener(e -> configHandler.openLoadConfigWindow());
-		createConfigItem.addActionListener(e -> configHandler.openCreateConfigWindow());
-
-		frame.setVisible(true);
-	}
-
-	private JTextField createStyledTextField(String labelText) {
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		panel.setBackground(new Color(245, 245, 245));
-
-		JLabel label = new JLabel(labelText);
-		label.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		label.setForeground(new Color(60, 63, 65));
-		JTextField textField = new JTextField(15);
-		textField.setFont(new Font("SansSerif", Font.PLAIN, 14));
-		textField.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 1));
-		textField.setPreferredSize(new Dimension(200, 30));
-
-		panel.add(label, BorderLayout.WEST);
-		panel.add(textField, BorderLayout.CENTER);
-
-		return textField;
-	}
-
-	private JButton createStyledButton(String text) {
-		JButton button = new JButton(text);
-		button.setBackground(new Color(30, 144, 255));
-		button.setForeground(Color.WHITE);
-		button.setFont(new Font("SansSerif", Font.BOLD, 14));
-		button.setFocusPainted(false);
-		button.setBorder(BorderFactory.createEmptyBorder(10, 15, 10, 15));
-		return button;
-	}
-
-	private void showPackageCosts() {
-		JOptionPane.showMessageDialog(null, "Package Costs:\n(Not yet implemented)", "Info", JOptionPane.INFORMATION_MESSAGE);
-	}
-
-	private void showAboutDialog() {
-		JOptionPane.showMessageDialog(null, "Package Cost Calculator\n© 2024 Benni", "About", JOptionPane.INFORMATION_MESSAGE);
+		return calculateButton;
 	}
 }
