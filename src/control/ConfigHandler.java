@@ -48,6 +48,16 @@ public class ConfigHandler {
         JTable configTable = new JTable(tableModel);
         JScrollPane tableScrollPane = new JScrollPane(configTable);
 
+        JPanel buttonPanel = getButtonPanel(tableModel, configTable);
+
+        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        configFrame.add(mainPanel);
+        configFrame.setVisible(true);
+    }
+
+    private JPanel getButtonPanel(ConfigTableModel tableModel, JTable configTable) {
         JButton addButton = new JButton("Add Config");
         addButton.addActionListener(_ -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
@@ -65,12 +75,7 @@ public class ConfigHandler {
         buttonPanel.add(saveButton);
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
-
-        mainPanel.add(tableScrollPane, BorderLayout.CENTER);
-        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
-
-        configFrame.add(mainPanel);
-        configFrame.setVisible(true);
+        return buttonPanel;
     }
 
     public void openLoadConfigWindow() {
@@ -80,13 +85,7 @@ public class ConfigHandler {
     private void applyConfig(JTable configTable) {
         validateAndSortConfig();
         try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE)) {
-            Properties properties = new Properties();
-            ConfigTableModel model = (ConfigTableModel) configTable.getModel();
-            for (int i = 0; i < model.getRowCount(); i++) {
-                properties.setProperty("entry." + i + ".dimensions",
-                        model.getValueAt(i, 0) + "x" + model.getValueAt(i, 1) + "x" + model.getValueAt(i, 2) + "x" + model.getValueAt(i, 3));
-                properties.setProperty("entry." + i + ".price", String.valueOf(model.getValueAt(i, 4)));
-            }
+            Properties properties = getProperties(configTable);
             properties.store(outputStream, "Config");
             JOptionPane.showMessageDialog(null, "Config applied successfully and saved to persistent storage.");
         } catch (IOException e) {
