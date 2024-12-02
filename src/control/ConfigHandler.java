@@ -49,16 +49,16 @@ public class ConfigHandler {
         JScrollPane tableScrollPane = new JScrollPane(configTable);
 
         JButton addButton = new JButton("Add Config");
-        addButton.addActionListener(e -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
+        addButton.addActionListener(_ -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
         JButton saveButton = new JButton("Save Config");
-        saveButton.addActionListener(e -> saveConfigToFile(configTable));
+        saveButton.addActionListener(_ -> saveConfigToFile(configTable));
 
         JButton applyButton = new JButton("Apply");
-        applyButton.addActionListener(e -> applyConfig(configTable));
+        applyButton.addActionListener(_ -> applyConfig(configTable));
 
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(e -> configFrame.setVisible(false));
+        cancelButton.addActionListener(_ -> configFrame.setVisible(false));
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
@@ -79,7 +79,7 @@ public class ConfigHandler {
 
     private void applyConfig(JTable configTable) {
         validateAndSortConfig();
-        try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE);) {
+        try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE)) {
             Properties properties = new Properties();
             ConfigTableModel model = (ConfigTableModel) configTable.getModel();
             for (int i = 0; i < model.getRowCount(); i++) {

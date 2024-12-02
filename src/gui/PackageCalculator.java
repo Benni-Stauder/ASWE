@@ -46,7 +46,7 @@ public class PackageCalculator {
 		JButton configButton = createToolbarButton("Config", "settings-icon.png", this::showConfigMenu);
 		JButton infoButton = createToolbarButton("Info", "info-icon.png", this::showPackageCosts);
 		JButton aboutButton = createToolbarButton("About", "about-icon.png", this::showAboutDialog);
-		JButton exitButton = createToolbarButton("Exit", "exit-icon.png", e -> System.exit(0));
+		JButton exitButton = createToolbarButton("Exit", "exit-icon.png", _ -> System.exit(0));
 
 		toolBar.add(configButton);
 		toolBar.add(Box.createHorizontalStrut(10));
@@ -92,8 +92,8 @@ public class PackageCalculator {
 		JMenuItem loadConfigItem = new JMenuItem("Load Config");
 		JMenuItem createConfigItem = new JMenuItem("Edit Config");
 
-		loadConfigItem.addActionListener(event -> configHandler.openLoadConfigWindow());
-		createConfigItem.addActionListener(event -> configHandler.openCreateConfigWindow());
+		loadConfigItem.addActionListener(_ -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(_ -> configHandler.openCreateConfigWindow());
 
 		configMenu.add(loadConfigItem);
 		configMenu.add(createConfigItem);
@@ -110,13 +110,12 @@ public class PackageCalculator {
 		}
 
 		StringBuilder costsInfo = new StringBuilder("Package Costs:\n");
-		for (int i = 0; i < configEntries.size(); i++) {
-			ConfigHandler.ConfigEntry entry = configEntries.get(i);
-			costsInfo.append(String.format(
-					"Dimensions %dx%dx%dx%d mm, Price: €%.2f\n",
-					entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
-			));
-		}
+        for (ConfigHandler.ConfigEntry entry : configEntries) {
+            costsInfo.append(String.format(
+                    "Dimensions %dx%dx%dx%d mm, Price: €%.2f\n",
+                    entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
+            ));
+        }
 
 		JOptionPane.showMessageDialog(null, costsInfo.toString(), "Package Costs", JOptionPane.INFORMATION_MESSAGE);
 	}
@@ -177,7 +176,7 @@ public class PackageCalculator {
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		calculateButton.addActionListener(e -> {
+		calculateButton.addActionListener(_ -> {
 			try {
 				int length = Integer.parseInt(lengthField.getText());
 				int width = Integer.parseInt(widthField.getText());

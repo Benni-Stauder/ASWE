@@ -21,7 +21,7 @@ public class Calculator {
 	 *
 	 * @param pack Das Paket mit Länge, Breite, Höhe und Gewicht.
 	 * @return Die berechneten Versandkosten.
-	 * @throws IllegalArgumentException Wenn ungültige Eingaben gemacht werden.
+	 * @throws IllegalArgumentException, wenn ungültige Eingaben gemacht werden.
 	 */
 	public static double calcShippingCosts(Packet pack) {
 		// Defensiv: Prüfen auf ungültige Eingaben
