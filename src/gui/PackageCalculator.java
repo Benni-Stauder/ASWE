@@ -4,6 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.List;
 
 import control.Calculator;
 import data.Packet;
@@ -101,8 +102,23 @@ public class PackageCalculator {
 		configMenu.show(sourceButton, 0, sourceButton.getHeight());
 	}
 
-	private void showPackageCosts(ActionEvent e) {
-		JOptionPane.showMessageDialog(null, "Package Costs:\n(Not yet implemented)", "Info", JOptionPane.INFORMATION_MESSAGE);
+	public void showPackageCosts(ActionEvent e) {
+		List<ConfigHandler.ConfigEntry> configEntries = configHandler.getConfigEntries();
+		if (configEntries.isEmpty()) {
+			JOptionPane.showMessageDialog(null, "No package costs configured.", "Package Costs", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		StringBuilder costsInfo = new StringBuilder("Package Costs:\n");
+		for (int i = 0; i < configEntries.size(); i++) {
+			ConfigHandler.ConfigEntry entry = configEntries.get(i);
+			costsInfo.append(String.format(
+					"Dimensions %dx%dx%dx%d mm, Price: €%.2f\n",
+					entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
+			));
+		}
+
+		JOptionPane.showMessageDialog(null, costsInfo.toString(), "Package Costs", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	private void showAboutDialog(ActionEvent e) {

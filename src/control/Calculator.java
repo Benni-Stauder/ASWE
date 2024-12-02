@@ -1,15 +1,20 @@
 package control;
 
 import data.Packet;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Die Klasse Calculator berechnet die Versandkosten basierend auf den Dimensionen und dem Gewicht eines Pakets.
- * Sie validiert die Eingabewerte und berücksichtigt dabei die vorgegebenen Versandkostenregeln.
+ * Die Versandkosten werden aus einer Konfigurationsdatei geladen.
  *
  * @author Benni
- * @version 1.1
+ * @version 2.0
  */
 public class Calculator {
+
+	private static final String CONFIG_FILE = "config.properties";
 
 	/**
 	 * Berechnet die Versandkosten eines Pakets basierend auf Dimensionen und Gewicht.
@@ -32,19 +37,39 @@ public class Calculator {
 			throw new IllegalArgumentException("Das Gurtmaß darf 300 cm nicht überschreiten.");
 		}
 
-		// Porto-Berechnung nach den Regeln
-		if (pack.length <= 300 && pack.width <= 300 && pack.height <= 150 && pack.weight <= 1000) {
-			return 3.89;
-		} else if (pack.length <= 600 && pack.width <= 300 && pack.height <= 150 && pack.weight <= 2000) {
-			return 4.39;
-		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 5000) {
-			return 5.89;
-		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 10000) {
-			return 7.99;
-		} else if (pack.length <= 1200 && pack.width <= 600 && pack.height <= 600 && pack.weight <= 31000) {
-			return 14.99;
-		} else {
-			throw new IllegalArgumentException("Das Paket überschreitet die zulässigen Maße oder das Gewicht.");
+		// Laden der Versandkosten aus der Konfigurationsdatei
+		Properties properties = new Properties();
+		try (FileInputStream inputStream = new FileInputStream(CONFIG_FILE)) {
+			properties.load(inputStream);
+		} catch (IOException e) {
+			throw new RuntimeException("Fehler beim Laden der Konfigurationsdatei: " + e.getMessage());
 		}
+
+		// Porto-Berechnung basierend auf den Regeln aus der Konfigurationsdatei
+		for (int i = 0; ; i++) {
+			String dimensions = properties.getProperty("entry." + i + ".dimensions");
+			String priceStr = properties.getProperty("entry." + i + ".price");
+
+			if (dimensions == null || priceStr == null) {
+				break; // Ende der Konfigurationsdatei erreicht
+			}
+
+			String[] parts = dimensions.split("x");
+			if (parts.length != 4) {
+				throw new RuntimeException("Ungültiges Format in der Konfigurationsdatei für entry." + i);
+			}
+
+			int lengthLimit = Integer.parseInt(parts[0]);
+			int widthLimit = Integer.parseInt(parts[1]);
+			int heightLimit = Integer.parseInt(parts[2]);
+			int weightLimit = Integer.parseInt(parts[3]);
+
+			if (pack.length <= lengthLimit && pack.width <= widthLimit && pack.height <= heightLimit && pack.weight <= weightLimit) {
+				return Double.parseDouble(priceStr);
+			}
+		}
+
+		// Kein passender Tarif gefunden
+		throw new IllegalArgumentException("Das Paket überschreitet die zulässigen Maße oder das Gewicht.");
 	}
 }

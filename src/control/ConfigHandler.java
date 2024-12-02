@@ -6,13 +6,19 @@ import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
 public class ConfigHandler {
 
     private static final String CONFIG_FILE = "config.properties";
-    private final List<ConfigEntry> configEntries;
+
+    public List<ConfigEntry> getConfigEntries() {
+        return configEntries;
+    }
+
+    private static List<ConfigEntry> configEntries;
     private JFrame configFrame;
 
     public ConfigHandler() {
@@ -68,6 +74,7 @@ public class ConfigHandler {
     }
 
     private void applyConfig(JTable configTable) {
+        validateAndSortConfig();
         try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE);) {
             Properties properties = new Properties();
             ConfigTableModel model = (ConfigTableModel) configTable.getModel();
@@ -85,6 +92,7 @@ public class ConfigHandler {
 
 
     private void saveConfigToFile(JTable configTable) {
+        validateAndSortConfig();
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showSaveDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
@@ -121,6 +129,72 @@ public class ConfigHandler {
             } catch(Exception _){}
         }
     }
+
+    private void validateAndSortConfig() {
+        // Normalize each entry's dimensions
+        for (ConfigEntry entry : configEntries) {
+            int[] dimensions = {entry.getLength(), entry.getWidth(), entry.getHeight()};
+            Arrays.sort(dimensions); // Sort dimensions so smallest is first, largest is last
+            entry.setLength(dimensions[0]);
+            entry.setWidth(dimensions[1]);
+            entry.setHeight(dimensions[2]);
+        }
+
+        // Sort the configuration entries
+        configEntries.sort((entry1, entry2) -> {
+            if (entry1.getLength() != entry2.getLength()) {
+                return Integer.compare(entry1.getLength(), entry2.getLength());
+            } else if (entry1.getWidth() != entry2.getWidth()) {
+                return Integer.compare(entry1.getWidth(), entry2.getWidth());
+            } else if (entry1.getHeight() != entry2.getHeight()) {
+                return Integer.compare(entry1.getHeight(), entry2.getHeight());
+            } else {
+                return Integer.compare(entry1.getWeight(), entry2.getWeight());
+            }
+        });
+
+        // Validate the configuration for conflicting or mismatched dimensions
+        for (int i = 0; i < configEntries.size() - 1; i++) {
+            ConfigEntry current = configEntries.get(i);
+            ConfigEntry next = configEntries.get(i + 1);
+
+            // Check for conflicting constraints (larger dimensions with lower weight limit)
+            if (current.getLength() <= next.getLength() &&
+                    current.getWidth() <= next.getWidth() &&
+                    current.getHeight() <= next.getHeight() &&
+                    current.getWeight() > next.getWeight()) {
+                JOptionPane.showMessageDialog(null,
+                        String.format("Invalid configuration found between entries:\n" +
+                                        "Entry %d: %dx%dx%dx%d\n" +
+                                        "Entry %d: %dx%dx%dx%d\n" +
+                                        "The larger dimensions have a lower weight limit.",
+                                i + 1, current.getLength(), current.getWidth(), current.getHeight(), current.getWeight(),
+                                i + 2, next.getLength(), next.getWidth(), next.getHeight(), next.getWeight()),
+                        "Validation Warning", JOptionPane.WARNING_MESSAGE);
+            }
+
+            // Check for mismatched dimensions
+            if ((current.getLength() < next.getLength() &&
+                    (current.getWidth() > next.getWidth() || current.getHeight() > next.getHeight())) ||
+                    (current.getWidth() < next.getWidth() &&
+                            (current.getLength() > next.getLength() || current.getHeight() > next.getHeight())) ||
+                    (current.getHeight() < next.getHeight() &&
+                            (current.getLength() > next.getLength() || current.getWidth() > next.getWidth()))) {
+                JOptionPane.showMessageDialog(null,
+                        String.format("Mismatched dimensions between entries:\n" +
+                                        "Entry %d: %dx%dx%d\n" +
+                                        "Entry %d: %dx%dx%d\n" +
+                                        "Smaller dimensions cannot have larger counterparts in other fields.",
+                                i + 1, current.getLength(), current.getWidth(), current.getHeight(),
+                                i + 2, next.getLength(), next.getWidth(), next.getHeight()),
+                        "Validation Warning", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        // If validation passes, confirm the configuration is valid
+        JOptionPane.showMessageDialog(null, "Configuration is valid and sorted.", "Validation Complete", JOptionPane.INFORMATION_MESSAGE);
+    }
+
 
     private void loadFile(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
@@ -219,7 +293,7 @@ public class ConfigHandler {
         }
     }
 
-    private static class ConfigEntry {
+    public static class ConfigEntry {
         private int length;
         private int width;
         private int height;
