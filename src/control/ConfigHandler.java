@@ -17,6 +17,12 @@ public class ConfigHandler {
 
     public ConfigHandler() {
         configEntries = new ArrayList<>();
+        try {
+            File configFile = new File(CONFIG_FILE);
+            loadFile(configFile);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(configFrame, e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     public void openCreateConfigWindow() {
@@ -42,9 +48,13 @@ public class ConfigHandler {
         JButton saveButton = new JButton("Save Config");
         saveButton.addActionListener(e -> saveConfigToFile(configTable));
 
+        JButton applyButton = new JButton("Apply");
+        applyButton.addActionListener(e -> applyConfig(configTable));
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
         buttonPanel.add(saveButton);
+        buttonPanel.add(applyButton);
 
         mainPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -57,19 +67,30 @@ public class ConfigHandler {
         loadConfigFromFile();
     }
 
+    private void applyConfig(JTable configTable) {
+        try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE);) {
+            Properties properties = new Properties();
+            ConfigTableModel model = (ConfigTableModel) configTable.getModel();
+            for (int i = 0; i < model.getRowCount(); i++) {
+                properties.setProperty("entry." + i + ".dimensions",
+                        model.getValueAt(i, 0) + "x" + model.getValueAt(i, 1) + "x" + model.getValueAt(i, 2) + "x" + model.getValueAt(i, 3));
+                properties.setProperty("entry." + i + ".price", String.valueOf(model.getValueAt(i, 4)));
+            }
+            properties.store(outputStream, "Config");
+            JOptionPane.showMessageDialog(null, "Config applied successfully and saved to persistent storage.");
+        } catch (IOException e) {
+            JOptionPane.showMessageDialog(null, "Error applying config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
+
     private void saveConfigToFile(JTable configTable) {
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showSaveDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
             try (OutputStream outputStream = new FileOutputStream(file)) {
-                Properties properties = new Properties();
-                ConfigTableModel model = (ConfigTableModel) configTable.getModel();
-                for (int i = 0; i < model.getRowCount(); i++) {
-                    properties.setProperty("entry." + i + ".dimensions",
-                            model.getValueAt(i, 0) + "x" + model.getValueAt(i, 1) + "x" + model.getValueAt(i, 2) + "x" + model.getValueAt(i, 3));
-                    properties.setProperty("entry." + i + ".price", String.valueOf(model.getValueAt(i, 4)));
-                }
+                Properties properties = getProperties(configTable);
                 properties.store(outputStream, "Package Configurations");
                 JOptionPane.showMessageDialog(null, "Config saved successfully.");
             } catch (IOException e) {
@@ -78,34 +99,53 @@ public class ConfigHandler {
         }
     }
 
+    private static Properties getProperties(JTable configTable) {
+        Properties properties = new Properties();
+        ConfigTableModel model = (ConfigTableModel) configTable.getModel();
+        for (int i = 0; i < model.getRowCount(); i++) {
+            properties.setProperty("entry." + i + ".dimensions",
+                    model.getValueAt(i, 0) + "x" + model.getValueAt(i, 1) + "x" + model.getValueAt(i, 2) + "x" + model.getValueAt(i, 3));
+            properties.setProperty("entry." + i + ".price", String.valueOf(model.getValueAt(i, 4)));
+        }
+        return properties;
+    }
+
     private void loadConfigFromFile() {
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showOpenDialog(null);
         if (option == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
-            try (InputStream inputStream = new FileInputStream(file)) {
-                Properties properties = new Properties();
-                properties.load(inputStream);
-                configEntries.clear();
-                int i = 0;
-                while (properties.containsKey("entry." + i + ".dimensions")) {
-                    String dimensions = properties.getProperty("entry." + i + ".dimensions");
-                    String[] parts = dimensions.split("x");
-                    double price = Double.parseDouble(properties.getProperty("entry." + i + ".price"));
-
-                    configEntries.add(new ConfigEntry(
-                            Integer.parseInt(parts[0]),
-                            Integer.parseInt(parts[1]),
-                            Integer.parseInt(parts[2]),
-                            Integer.parseInt(parts[3]),
-                            price
-                    ));
-                    i++;
-                }
+            try{
+                loadFile(file);
                 JOptionPane.showMessageDialog(null, "Config loaded successfully.");
-            } catch (IOException | NumberFormatException e) {
-                JOptionPane.showMessageDialog(null, "Error loading config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+            } catch(Exception _){}
+        }
+    }
+
+    private void loadFile(File file) {
+        try (InputStream inputStream = new FileInputStream(file)) {
+            Properties properties = new Properties();
+            properties.load(inputStream);
+            configEntries.clear();
+            int i = 0;
+            while (properties.containsKey("entry." + i + ".dimensions")) {
+                String dimensions = properties.getProperty("entry." + i + ".dimensions");
+                String[] parts = dimensions.split("x");
+                double price = Double.parseDouble(properties.getProperty("entry." + i + ".price"));
+
+                configEntries.add(new ConfigEntry(
+                        Integer.parseInt(parts[0]),
+                        Integer.parseInt(parts[1]),
+                        Integer.parseInt(parts[2]),
+                        Integer.parseInt(parts[3]),
+                        price
+                ));
+                i++;
             }
+            OutputStream outputStream = new FileOutputStream(CONFIG_FILE);
+            properties.store(outputStream, "Persistent Package Configurations");
+        } catch (IOException | NumberFormatException e) {
+            JOptionPane.showMessageDialog(null, "Error loading config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

@@ -11,7 +11,6 @@ import control.ConfigHandler;
 
 public class PackageCalculator {
 
-	private static final String CONFIG_FILE = "config.properties";
 	private JLabel resultLabel;
 	private final ConfigHandler configHandler;
 
