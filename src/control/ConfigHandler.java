@@ -168,10 +168,11 @@ public class ConfigHandler {
                     current.getHeight() <= next.getHeight() &&
                     current.getWeight() > next.getWeight()) {
                 JOptionPane.showMessageDialog(null,
-                        String.format("Invalid configuration found between entries:\n" +
-                                        "Entry %d: %dx%dx%dx%d\n" +
-                                        "Entry %d: %dx%dx%dx%d\n" +
-                                        "The larger dimensions have a lower weight limit.",
+                        String.format("""
+                                        Invalid configuration found between entries:
+                                        Entry %d: %dx%dx%dx%d
+                                        Entry %d: %dx%dx%dx%d
+                                        The larger dimensions have a lower weight limit.""",
                                 i + 1, current.getLength(), current.getWidth(), current.getHeight(), current.getWeight(),
                                 i + 2, next.getLength(), next.getWidth(), next.getHeight(), next.getWeight()),
                         "Validation Warning", JOptionPane.WARNING_MESSAGE);
@@ -185,10 +186,11 @@ public class ConfigHandler {
                     (current.getHeight() < next.getHeight() &&
                             (current.getLength() > next.getLength() || current.getWidth() > next.getWidth()))) {
                 JOptionPane.showMessageDialog(null,
-                        String.format("Mismatched dimensions between entries:\n" +
-                                        "Entry %d: %dx%dx%d\n" +
-                                        "Entry %d: %dx%dx%d\n" +
-                                        "Smaller dimensions cannot have larger counterparts in other fields.",
+                        String.format("""
+                                        Mismatched dimensions between entries:
+                                        Entry %d: %dx%dx%d
+                                        Entry %d: %dx%dx%d
+                                        Smaller dimensions cannot have larger counterparts in other fields.""",
                                 i + 1, current.getLength(), current.getWidth(), current.getHeight(),
                                 i + 2, next.getLength(), next.getWidth(), next.getHeight()),
                         "Validation Warning", JOptionPane.WARNING_MESSAGE);
