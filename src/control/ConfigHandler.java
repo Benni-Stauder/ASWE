@@ -57,10 +57,14 @@ public class ConfigHandler {
         JButton applyButton = new JButton("Apply");
         applyButton.addActionListener(e -> applyConfig(configTable));
 
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> configFrame.setVisible(false));
+
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
         buttonPanel.add(saveButton);
         buttonPanel.add(applyButton);
+        buttonPanel.add(cancelButton);
 
         mainPanel.add(tableScrollPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
