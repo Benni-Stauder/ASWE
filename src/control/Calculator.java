@@ -3,6 +3,7 @@ package control;
 import data.Packet;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Properties;
 
 /**
@@ -45,6 +46,12 @@ public class Calculator {
 			throw new RuntimeException("Fehler beim Laden der Konfigurationsdatei: " + e.getMessage());
 		}
 
+		// Sortieren der Dimensionen des Pakets nach Größe
+		int[] packDimensions = {pack.length, pack.width, pack.height};
+
+		// Dimensionen sortieren
+		Arrays.sort(packDimensions);
+
 		// Porto-Berechnung basierend auf den Regeln aus der Konfigurationsdatei
 		for (int i = 0; ; i++) {
 			String dimensions = properties.getProperty("entry." + i + ".dimensions");
@@ -64,7 +71,7 @@ public class Calculator {
 			int heightLimit = Integer.parseInt(parts[2]);
 			int weightLimit = Integer.parseInt(parts[3]);
 
-			if (pack.length <= lengthLimit && pack.width <= widthLimit && pack.height <= heightLimit && pack.weight <= weightLimit) {
+			if (packDimensions[0] <= lengthLimit && packDimensions[1] <= widthLimit && packDimensions[2] <= heightLimit && pack.weight <= weightLimit) {
 				return Double.parseDouble(priceStr);
 			}
 		}
