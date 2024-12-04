@@ -9,119 +9,114 @@ import java.io.File;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Testfälle für die Klasse Calculator, die die Berechnung der Versandkosten überprüft.
- * Es werden Äquivalenzklassen und Grenzfälle getestet.
+ * Unit tests for the {@link Calculator} class, verifying the correctness of shipping cost calculations.
+ *
+ * <p>These tests cover equivalence classes, edge cases, and invalid input scenarios.</p>
  *
  * @author Benni
  */
 public class CalculatorTest {
 
-    private Calculator calculator;
-
+    /**
+     * Sets up the test environment by loading the default configuration file.
+     */
     @BeforeEach
     void setUp() {
-        calculator = new Calculator();
         ConfigHandler configHandler = new ConfigHandler();
         File defaultFile = new File("default.properties");
         configHandler.loadFile(defaultFile);
     }
 
     /**
-     * Testet die Berechnung für ein kleines Päckchen (30x30x15, 1kg).
+     * Verifies the calculation for a small packet with dimensions 30x30x15cm and weight 1kg.
      */
     @Test
     public void testSmallPacket() {
         Packet packet = new Packet(30, 30, 15, 1000);
-        double shippingCost = calculator.calcShippingCosts(packet);
-        assertEquals(3.89, shippingCost, "Kosten für kleines Päckchen sind falsch.");
+        double shippingCost = Calculator.calcShippingCosts(packet);
+        assertEquals(3.89, shippingCost, "Incorrect shipping cost for a small packet.");
     }
 
     /**
-     * Testet die Berechnung für ein mittelgroßes Päckchen (60x30x15, 2kg).
+     * Verifies the calculation for a medium packet with dimensions 60x30x15cm and weight 2kg.
      */
     @Test
     public void testMediumPacket() {
         Packet packet = new Packet(60, 30, 15, 2000);
-        double shippingCost = calculator.calcShippingCosts(packet);
-        assertEquals(4.39, shippingCost, "Kosten für mittelgroßes Päckchen sind falsch.");
+        double shippingCost = Calculator.calcShippingCosts(packet);
+        assertEquals(4.39, shippingCost, "Incorrect shipping cost for a medium packet.");
     }
 
     /**
-     * Testet die Berechnung für ein Paket (120x60x60, 5kg, Gurtmaß <= 300cm).
+     * Verifies the calculation for a small package with dimensions 60x30x30cm, weight 5kg, and girth ≤ 300cm.
      */
     @Test
     public void testSmallPackage() {
-        Packet packet = new Packet(120, 60, 60, 5000);
-        double shippingCost = calculator.calcShippingCosts(packet);
-        assertEquals(5.89, shippingCost, "Kosten für kleines Paket sind falsch.");
+        Packet packet = new Packet(60, 30, 30, 5000);
+        double shippingCost = Calculator.calcShippingCosts(packet);
+        assertEquals(5.89, shippingCost, "Incorrect shipping cost for a small package.");
     }
 
     /**
-     * Testet die Berechnung für ein Paket (120x60x60, 10kg, Gurtmaß <= 300cm).
+     * Verifies the calculation for a medium package with dimensions 100x40x40cm, weight 10kg, and girth ≤ 300cm.
      */
     @Test
     public void testMediumPackage() {
-        Packet packet = new Packet(120, 60, 60, 10000);
-        double shippingCost = calculator.calcShippingCosts(packet);
-        assertEquals(7.99, shippingCost, "Kosten für mittelgroßes Paket sind falsch.");
+        Packet packet = new Packet(100, 40, 40, 10000);
+        double shippingCost = Calculator.calcShippingCosts(packet);
+        assertEquals(7.99, shippingCost, "Incorrect shipping cost for a medium package.");
     }
 
     /**
-     * Testet die Berechnung für ein großes Paket (120x60x60, 31kg).
+     * Verifies the calculation for a large package with dimensions 100x40x40cm and weight 31kg.
      */
     @Test
     public void testLargePackage() {
-        Packet packet = new Packet(120, 60, 60, 31000);
-        double shippingCost = calculator.calcShippingCosts(packet);
-        assertEquals(14.99, shippingCost, "Kosten für großes Paket sind falsch.");
+        Packet packet = new Packet(100, 40, 40, 31000);
+        double shippingCost = Calculator.calcShippingCosts(packet);
+        assertEquals(14.99, shippingCost, "Incorrect shipping cost for a large package.");
     }
 
     /**
-     * Testet die Ablehnung eines Pakets mit ungültigen Dimensionen (negativer Wert).
+     * Verifies that a package with negative dimensions throws an exception.
      */
     @Test
     public void testInvalidDimensions() {
         Packet packet = new Packet(-1, 60, 60, 5000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet),
-                "Ungültige Dimensionen sollten eine Exception werfen.");
+        assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(packet),
+                "Negative dimensions should throw an exception.");
     }
 
     /**
-     * Testet die Ablehnung eines Pakets mit ungültigem Gurtmaß (> 300cm).
+     * Verifies that a package with an invalid girth (> 300cm) throws an exception.
      */
     @Test
     public void testInvalidGirth() {
         Packet packet = new Packet(1500, 100, 100, 5000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet),
-                "Ungültiges Gurtmaß sollte eine Exception werfen.");
+        assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(packet),
+                "Invalid girth should throw an exception.");
     }
 
     /**
-     * Testet die Ablehnung eines Pakets mit null maßen.
+     * Verifies that a package with zero dimensions or weight throws an exception.
      */
     @Test
     public void testInvalidSizes() {
-        Packet packet1 = new Packet(0, 100, 100, 5000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet1),
-                "Ungültige Größe sollte eine Exception werfen.");
-        Packet packet2 = new Packet(100, 0, 100, 5000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet2),
-                "Ungültige Größe sollte eine Exception werfen.");
-        Packet packet3 = new Packet(100, 100, 0, 5000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet3),
-                "Ungültige Größe sollte eine Exception werfen.");
-        Packet packet4 = new Packet(100, 100, 100, 0);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet4),
-                "Ungültige Größe sollte eine Exception werfen.");
+        assertAll("Zero dimensions or weight should throw exceptions",
+                () -> assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(new Packet(0, 100, 100, 5000)), "Zero length should throw an exception."),
+                () -> assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(new Packet(100, 0, 100, 5000)), "Zero width should throw an exception."),
+                () -> assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(new Packet(100, 100, 0, 5000)), "Zero height should throw an exception."),
+                () -> assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(new Packet(100, 100, 100, 0)), "Zero weight should throw an exception.")
+        );
     }
 
     /**
-     * Testet die Ablehnung eines Pakets mit zu hohem Gewicht (> 31kg).
+     * Verifies that a package with weight exceeding 31kg throws an exception.
      */
     @Test
     public void testOverweightPackage() {
         Packet packet = new Packet(120, 60, 60, 32000);
-        assertThrows(IllegalArgumentException.class, () -> calculator.calcShippingCosts(packet),
-                "Zu hohes Gewicht sollte eine Exception werfen.");
+        assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(packet),
+                "Overweight packages should throw an exception.");
     }
 }

@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class RandomPackageTests {
 
-    private final Calculator calculator = new Calculator();
     private final Random random = new Random();
 
     @BeforeEach
@@ -42,7 +41,7 @@ public class RandomPackageTests {
             double actualCost;
 
             try {
-                actualCost = calculator.calcShippingCosts(packet);
+                actualCost = Calculator.calcShippingCosts(packet);
             } catch (IllegalArgumentException e) {
                 // Wenn eine Exception geworfen wird, überspringen wir diesen Testfall
                 continue;
@@ -66,17 +65,17 @@ public class RandomPackageTests {
      * @return Das erwartete Porto.
      */
     private double calculateExpectedShippingCost(Packet packet) {
-        int girth = packet.length + 2 * packet.width + 2 * packet.height;
+        int girth = packet.length() + 2 * packet.width() + 2 * packet.height();
 
-        if (packet.length <= 300 && packet.width <= 300 && packet.height <= 150 && packet.weight <= 1000) {
+        if (packet.length() <= 300 && packet.width() <= 300 && packet.height() <= 150 && packet.weight() <= 1000) {
             return 3.89;
-        } else if (packet.length <= 600 && packet.width <= 300 && packet.height <= 150 && packet.weight <= 2000) {
+        } else if (packet.length() <= 600 && packet.width() <= 300 && packet.height() <= 150 && packet.weight() <= 2000) {
             return 4.39;
-        } else if (packet.length <= 1200 && packet.width <= 600 && packet.height <= 600 && girth <= 3000 && packet.weight <= 5000) {
+        } else if (packet.length() <= 1200 && packet.width() <= 600 && packet.height() <= 600 && girth <= 3000 && packet.weight() <= 5000) {
             return 5.89;
-        } else if (packet.length <= 1200 && packet.width <= 600 && packet.height <= 600 && girth <= 3000 && packet.weight <= 10000) {
+        } else if (packet.length() <= 1200 && packet.width() <= 600 && packet.height() <= 600 && girth <= 3000 && packet.weight() <= 10000) {
             return 7.99;
-        } else if (packet.length <= 1200 && packet.width <= 600 && packet.height <= 600 && packet.weight <= 31000) {
+        } else if (packet.length() <= 1200 && packet.width() <= 600 && packet.height() <= 600 && packet.weight() <= 31000) {
             return 14.99;
         } else {
             throw new IllegalArgumentException("Ungültiges Paket: " + packet);

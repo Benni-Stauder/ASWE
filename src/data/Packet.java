@@ -1,25 +1,9 @@
 package data;
 
-public class Packet {
-
-	// length of package in millimeters
-	public int length;
-
-	// width of package in millimeters
-	public int width;
-	
-	// height of package in millimeters
-	public int height;
-	
-	// weight of package in grams
-	public int weight;
-
-	// constructor
-	public Packet(int length, int width, int height, int weight) {
-		this.length = length;
-		this.width = width;
-		this.height = height;
-		this.weight = weight;
-	}
-	
-}
+/**
+ * @param length length of package in centimeters
+ * @param width  width of package in centimeters
+ * @param height height of package in centimeters
+ * @param weight weight of package in kilogramms
+ */
+public record Packet(int length, int width, int height, int weight) {}

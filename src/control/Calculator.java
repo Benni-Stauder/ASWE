@@ -37,7 +37,7 @@ public class Calculator {
 
 		int[] sortedDimensions = getSortedDimensions(pack);
 
-		return calculateCostFromConfig(properties, sortedDimensions, pack.weight);
+		return calculateCostFromConfig(properties, sortedDimensions, pack.weight());
 	}
 
 	/**
@@ -47,7 +47,7 @@ public class Calculator {
 	 * @throws IllegalArgumentException if any dimension or weight is less than or equal to zero.
 	 */
 	private static void validatePackageDimensions(Packet pack) {
-		if (pack.length <= 0 || pack.width <= 0 || pack.height <= 0 || pack.weight <= 0) {
+		if (pack.length() <= 0 || pack.width() <= 0 || pack.height() <= 0 || pack.weight() <= 0) {
 			throw new IllegalArgumentException("All dimensions and weight must be positive.");
 		}
 	}
@@ -59,7 +59,7 @@ public class Calculator {
 	 * @return The calculated girth.
 	 */
 	private static int calculateGirth(Packet pack) {
-		return pack.length + 2 * pack.width + 2 * pack.height;
+		return pack.length() + 2 * pack.width() + 2 * pack.height();
 	}
 
 	/**
@@ -85,7 +85,7 @@ public class Calculator {
 	 * @return An array of sorted dimensions.
 	 */
 	private static int[] getSortedDimensions(Packet pack) {
-		int[] dimensions = {pack.length, pack.width, pack.height};
+		int[] dimensions = {pack.length(), pack.width(), pack.height()};
 		Arrays.sort(dimensions);
 		return dimensions;
 	}

@@ -65,11 +65,11 @@ public class PackageCalculator {
 
 		toolBar.add(createToolbarButton("Config", "src/gui/pictures/config.png", this::showConfigMenu));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(createToolbarButton("Info", "src/gui/pictures/info.png", this::showPackageCosts));
+		toolBar.add(createToolbarButton("Info", "src/gui/pictures/info.png", _ -> showPackageCosts()));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(createToolbarButton("About", "src/gui/pictures/about.png", this::showAboutDialog));
+		toolBar.add(createToolbarButton("About", "src/gui/pictures/about.png", _ -> showAboutDialog()));
 		toolBar.add(Box.createHorizontalGlue());
-		toolBar.add(createToolbarButton("Exit", "src/gui/pictures/exit.png", e -> System.exit(0)));
+		toolBar.add(createToolbarButton("Exit", "src/gui/pictures/exit.png", _ -> System.exit(0)));
 
 		return toolBar;
 	}
@@ -128,8 +128,8 @@ public class PackageCalculator {
 		JMenuItem loadConfigItem = new JMenuItem("Load Config");
 		JMenuItem createConfigItem = new JMenuItem("Edit Config");
 
-		loadConfigItem.addActionListener(evt -> configHandler.openLoadConfigWindow());
-		createConfigItem.addActionListener(evt -> configHandler.openCreateConfigWindow());
+		loadConfigItem.addActionListener(_ -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(_ -> configHandler.openCreateConfigWindow());
 
 		configMenu.add(loadConfigItem);
 		configMenu.add(createConfigItem);
@@ -140,10 +140,8 @@ public class PackageCalculator {
 
 	/**
 	 * Displays the configured package costs in a dialog.
-	 *
-	 * @param e The action event
 	 */
-	public void showPackageCosts(ActionEvent e) {
+	public void showPackageCosts() {
 		List<ConfigEntry> configEntries = configHandler.getConfigEntries();
 
 		if (configEntries.isEmpty()) {
@@ -164,10 +162,8 @@ public class PackageCalculator {
 
 	/**
 	 * Displays the "About" dialog.
-	 *
-	 * @param e The action event
 	 */
-	private void showAboutDialog(ActionEvent e) {
+	private void showAboutDialog() {
 		JOptionPane.showMessageDialog(null, "Package Cost Calculator\n© 2024 Benni", "About", JOptionPane.INFORMATION_MESSAGE);
 	}
 
@@ -243,7 +239,7 @@ public class PackageCalculator {
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		calculateButton.addActionListener(e -> calculateShippingCost(lengthField, widthField, heightField, weightField));
+		calculateButton.addActionListener(_ -> calculateShippingCost(lengthField, widthField, heightField, weightField));
 
 		return calculateButton;
 	}

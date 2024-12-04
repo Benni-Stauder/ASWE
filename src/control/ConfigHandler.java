@@ -2,9 +2,7 @@ package control;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.table.AbstractTableModel;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -16,7 +14,7 @@ import java.util.List;
 public class ConfigHandler {
 
     private static final String CONFIG_FILE = "config.properties";
-    private List<ConfigEntry> configEntries;
+    private final List<ConfigEntry> configEntries;
     private JFrame configFrame;
 
     /**
@@ -69,16 +67,16 @@ public class ConfigHandler {
      */
     private JPanel createButtonPanel(ConfigTableModel tableModel, JTable configTable) {
         JButton addButton = new JButton("Add Config");
-        addButton.addActionListener(e -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
+        addButton.addActionListener(_ -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
         JButton saveButton = new JButton("Save Config");
-        saveButton.addActionListener(e -> saveConfigToFile(configTable));
+        saveButton.addActionListener(_ -> saveConfigToFile(configTable));
 
         JButton applyButton = new JButton("Apply Config");
-        applyButton.addActionListener(e -> applyConfig(configTable));
+        applyButton.addActionListener(_ -> applyConfig(configTable));
 
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(this::cancelConfig);
+        cancelButton.addActionListener(_ -> cancelConfig());
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
@@ -91,7 +89,7 @@ public class ConfigHandler {
     /**
      * Cancels the current edits and reloads the configuration from the default file.
      */
-    private void cancelConfig(ActionEvent e) {
+    private void cancelConfig() {
         loadFile(new File(CONFIG_FILE));
         if (configFrame != null) {
             configFrame.setVisible(false);
