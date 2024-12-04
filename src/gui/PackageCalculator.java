@@ -42,11 +42,10 @@ public class PackageCalculator {
 
 	private JToolBar createToolBar() {
 		JToolBar toolBar = initializeToolBar();
-
-		JButton configButton = createToolbarButton("Config", "settings-icon.png", this::showConfigMenu);
-		JButton infoButton = createToolbarButton("Info", "info-icon.png", this::showPackageCosts);
-		JButton aboutButton = createToolbarButton("About", "about-icon.png", this::showAboutDialog);
-		JButton exitButton = createToolbarButton("Exit", "exit-icon.png", _ -> System.exit(0));
+		JButton configButton = createToolbarButton("Config", "src/gui/pictures/config.png", this::showConfigMenu);
+		JButton infoButton = createToolbarButton("Info", "src/gui/pictures/info.png", this::showPackageCosts);
+		JButton aboutButton = createToolbarButton("About", "src/gui/pictures/about.png", this::showAboutDialog);
+		JButton exitButton = createToolbarButton("Exit", "src/gui/pictures/exit.png", _ -> System.exit(0));
 
 		toolBar.add(configButton);
 		toolBar.add(Box.createHorizontalStrut(10));
@@ -68,7 +67,7 @@ public class PackageCalculator {
 	}
 
 	private JButton createToolbarButton(String text, String iconPath, ActionListener action) {
-		JButton button = new JButton(text, loadIcon(iconPath));
+		JButton button = new JButton(text, loadAndScaleIcon(iconPath)); // Set the scaled icon
 		button.setFont(new Font("SansSerif", Font.BOLD, 14));
 		button.setBackground(new Color(30, 144, 255));
 		button.setForeground(Color.WHITE);
@@ -78,13 +77,10 @@ public class PackageCalculator {
 		return button;
 	}
 
-	private ImageIcon loadIcon(String iconPath) {
-		try {
-			return new ImageIcon(iconPath);
-		} catch (Exception e) {
-			System.err.println("Icon not found: " + iconPath);
-			return null;
-		}
+	private ImageIcon loadAndScaleIcon(String path) {
+		ImageIcon icon = new ImageIcon(path);
+		Image scaledImage = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH); // Scale the image
+		return new ImageIcon(scaledImage);
 	}
 
 	private void showConfigMenu(ActionEvent e) {
@@ -170,32 +166,33 @@ public class PackageCalculator {
 	private JButton createCalculateButton(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		JButton calculateButton = new JButton("Calculate Price");
 		calculateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		calculateButton.setBackground(new Color(30, 144, 255));
-		calculateButton.setForeground(Color.WHITE);
+		calculateButton.setBackground(new Color(0, 103, 200));
 		calculateButton.setFont(new Font("SansSerif", Font.BOLD, 16));
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		calculateButton.addActionListener(_ -> {
-			try {
-				int length = Integer.parseInt(lengthField.getText());
-				int width = Integer.parseInt(widthField.getText());
-				int height = Integer.parseInt(heightField.getText());
-				int weight = Integer.parseInt(weightField.getText());
-
-				Packet packet = new Packet(length, width, height, weight);
-				double price = Calculator.calcShippingCosts(packet);
-
-				resultLabel.setText(String.format("Shipping Cost: %.2f €", price));
-			} catch (NumberFormatException ex) {
-				JOptionPane.showMessageDialog(null, "Please enter valid numerical values.", "Input Error", JOptionPane.ERROR_MESSAGE);
-				resultLabel.setText(" ");
-			} catch (IllegalArgumentException ex) {
-				JOptionPane.showMessageDialog(null, ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
-				resultLabel.setText(" ");
-			}
-		});
+		calculateButton.addActionListener(_ -> calculateButtonParser(lengthField, widthField, heightField, weightField));
 
 		return calculateButton;
+	}
+
+	private void calculateButtonParser(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
+		try {
+			int length = Integer.parseInt(lengthField.getText());
+			int width = Integer.parseInt(widthField.getText());
+			int height = Integer.parseInt(heightField.getText());
+			int weight = Integer.parseInt(weightField.getText());
+
+			Packet packet = new Packet(length, width, height, weight);
+			double price = Calculator.calcShippingCosts(packet);
+
+			resultLabel.setText(String.format("Shipping Cost: %.2f €", price));
+		} catch (NumberFormatException ex) {
+			JOptionPane.showMessageDialog(null, "Please enter valid numerical values.", "Input Error", JOptionPane.ERROR_MESSAGE);
+			resultLabel.setText(" ");
+		} catch (IllegalArgumentException ex) {
+			JOptionPane.showMessageDialog(null, ex.getMessage(), "Input Error", JOptionPane.ERROR_MESSAGE);
+			resultLabel.setText(" ");
+		}
 	}
 }

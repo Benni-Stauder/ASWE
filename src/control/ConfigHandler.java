@@ -4,6 +4,7 @@ import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -68,7 +69,7 @@ public class ConfigHandler {
         applyButton.addActionListener(_ -> applyConfig(configTable));
 
         JButton cancelButton = new JButton("Cancel");
-        cancelButton.addActionListener(_ -> configFrame.setVisible(false));
+        cancelButton.addActionListener(this::cancelConfig);
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
@@ -76,6 +77,12 @@ public class ConfigHandler {
         buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
         return buttonPanel;
+    }
+
+    private void cancelConfig(ActionEvent actionEvent) {
+        File file = new File(CONFIG_FILE);
+        loadFile(file);
+        configFrame.setVisible(false);
     }
 
     public void openLoadConfigWindow() {
@@ -87,7 +94,7 @@ public class ConfigHandler {
         try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE)) {
             Properties properties = getProperties(configTable);
             properties.store(outputStream, "Config");
-            JOptionPane.showMessageDialog(null, "Config applied successfully and saved to persistent storage.");
+            JOptionPane.showMessageDialog(null, "Config applied successfully.");
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Error applying config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -128,6 +135,7 @@ public class ConfigHandler {
             File file = fileChooser.getSelectedFile();
             try{
                 loadFile(file);
+                validateAndSortConfig();
                 JOptionPane.showMessageDialog(null, "Config loaded successfully.");
             } catch(Exception _){}
         }
@@ -195,9 +203,6 @@ public class ConfigHandler {
                         "Validation Warning", JOptionPane.WARNING_MESSAGE);
             }
         }
-
-        // If validation passes, confirm the configuration is valid
-        JOptionPane.showMessageDialog(null, "Configuration is valid and sorted.", "Validation Complete", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -222,7 +227,7 @@ public class ConfigHandler {
                 i++;
             }
             OutputStream outputStream = new FileOutputStream(CONFIG_FILE);
-            properties.store(outputStream, "Persistent Package Configurations");
+            properties.store(outputStream, "Application Data Store");
         } catch (IOException | NumberFormatException e) {
             JOptionPane.showMessageDialog(null, "Error loading config: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
