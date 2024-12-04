@@ -1,6 +1,8 @@
-package control;
+package test;
 
+import control.Calculator;
 import data.Packet;
+import control.ConfigHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,9 +35,9 @@ public class RandomPackageTests {
     public void testRandomPackages() {
         for (int i = 0; i < 1000; i++) {
             // Generiere zufällige Werte für Paketmaße und Gewicht
-            int length = random.nextInt(1300) + 1; // 1 bis 1200 mm
+            int length = random.nextInt(700) + 1; // 1 bis 600 mm
             int width = random.nextInt(700) + 1;   // 1 bis 600 mm
-            int height = random.nextInt(700) + 1;  // 1 bis 600 mm
+            int height = random.nextInt(1300) + 1;  // 1 bis 1200 mm
             int weight = random.nextInt(32000) + 1; // 1 bis 31000 g
 
             Packet packet = new Packet(length, width, height, weight);

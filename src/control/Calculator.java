@@ -27,7 +27,7 @@ public class Calculator {
 	public static double calcShippingCosts(Packet pack) {
 		int girth = calculateGirth(pack);
 
-		if (girth > 300) { // Adjusted to cm for realistic girth constraints
+		if (girth > 3000) { // Adjusted to cm for realistic girth constraints
 			throw new IllegalArgumentException("The girth of the package must not exceed 300 cm.");
 		}
 
@@ -85,7 +85,7 @@ public class Calculator {
 	 * @return The calculated shipping cost.
 	 * @throws IllegalArgumentException if no suitable rate is found in the configuration.
 	 */
-	private static double calculateCostFromConfig(Properties properties, int[] sortedDimensions, int weight) {
+	public static double calculateCostFromConfig(Properties properties, int[] sortedDimensions, int weight) {
 		for (int i = 0; ; i++) {
 			String dimensionsKey = "entry." + i + ".dimensions";
 			String priceKey = "entry." + i + ".price";

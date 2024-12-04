@@ -1,5 +1,8 @@
-package control;
+package test;
 
+import control.ConfigEntry;
+import control.ConfigHandler;
+import control.ConfigTableModel;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -51,6 +54,8 @@ public class ConfigHandlerTest {
 
     /**
      * Tests loading a valid configuration file.
+     *
+     * @throws IOException If the file cant be open an IOException is thrown
      */
     @Test
     public void testLoadFile_validFile() throws IOException {
@@ -102,6 +107,8 @@ public class ConfigHandlerTest {
 
     /**
      * Tests applying the configuration to a mock JTable and saving it to a file.
+     *
+     * @throws IOException If the default config file cant be opened, a IOException is thrown
      */
     @Test
     public void testApplyConfig_success() throws IOException {
@@ -126,6 +133,8 @@ public class ConfigHandlerTest {
 
     /**
      * Tests saving the configuration to a file.
+     *
+     * @throws IOException If the config file cant be opened, a IOException is thrown
      */
     @Test
     public void testSaveConfigToFile_success() throws IOException {

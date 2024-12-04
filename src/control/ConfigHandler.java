@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class ConfigHandler {
 
-    private static final String CONFIG_FILE = "config.properties";
-    private final List<ConfigEntry> configEntries;
-    private JFrame configFrame;
+    private static final String CONFIG_FILE = "config.properties"; // Default config file
+    private final List<ConfigEntry> configEntries; // List of all config entries
+    private JFrame configFrame; // The JFrame representing the config window
 
     /**
      * Constructor initializes the handler and loads configuration entries from the default file.
@@ -116,8 +116,9 @@ public class ConfigHandler {
      * Saves the configuration to a user-specified file.
      *
      * @param configTable The table displaying the configuration entries.
+     * @param file File to write config to. If null makes you choose the file.
      */
-    void saveConfigToFile(JTable configTable, File file) {
+    public void saveConfigToFile(JTable configTable, File file) {
         try {
             validateAndSortConfig();
             if (file == null) {
@@ -160,7 +161,7 @@ public class ConfigHandler {
     /**
      * Validates and sorts the configuration entries for consistency and logical ordering.
      */
-    void validateAndSortConfig() {
+    public void validateAndSortConfig() {
         for (ConfigEntry entry : configEntries) {
             int[] dimensions = {entry.getLength(), entry.getWidth(), entry.getHeight()};
             Arrays.sort(dimensions);
@@ -180,7 +181,7 @@ public class ConfigHandler {
      *
      * @param file The file to load from.
      */
-    void loadFile(File file) {
+    public void loadFile(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
             Properties properties = new Properties();
             properties.load(inputStream);

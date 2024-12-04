@@ -1,12 +1,15 @@
-package control;
+package test;
 
+import control.Calculator;
+import control.ConfigHandler;
 import data.Packet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import javax.swing.*;
 import java.io.File;
+import java.util.Properties;
 
+import static control.Calculator.calculateCostFromConfig;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -125,14 +128,28 @@ public class CalculatorTest {
      */
     @Test
     public void testWrongConfig() {
-        Packet packet = new Packet(120, 60, 60, 32000);
-        ConfigHandler configHandler = new ConfigHandler();
-        File wrongConfigFile = new File("test/control/wrongConfig.properties");
-        configHandler.loadFile(wrongConfigFile);
-        ConfigTableModel tableModel = new ConfigTableModel(configHandler.getConfigEntries());
-        JTable configTable = new JTable(tableModel);
-        File configFile = new File("config.properties");
-        configHandler.saveConfigToFile(configTable, configFile);
-        assertThrows(RuntimeException.class, () -> Calculator.calcShippingCosts(packet));
+        Properties properties = new Properties();
+        properties.setProperty("entry.0.dimensions","10x10x10x100x100");
+        properties.setProperty("entry.0.price","50.0");
+        assertThrows(RuntimeException.class,() -> calculateCostFromConfig(properties,null,0));
+    }
+
+    /**
+     * Verifies if an empty config is handled, a IllegalArgumentException is thrown
+     */
+    @Test
+    public void testEmptyConfig() {
+        Properties properties = new Properties();
+        assertThrows(IllegalArgumentException.class,() -> calculateCostFromConfig(properties,null,0));
+    }
+
+    /**
+     * Verifies if an empty config is handled, a IllegalArgumentException is thrown
+     */
+    @Test
+    public void testNoPriceConfig() {
+        Properties properties = new Properties();
+        properties.setProperty("entry.0.dimensions","10x10x10x100");
+        assertThrows(IllegalArgumentException.class,() -> calculateCostFromConfig(properties,null,0));
     }
 }
