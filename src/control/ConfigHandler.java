@@ -89,7 +89,7 @@ public class ConfigHandler {
         loadConfigFromFile();
     }
 
-    private void applyConfig(JTable configTable) {
+    void applyConfig(JTable configTable) {
         validateAndSortConfig();
         try (OutputStream outputStream = new FileOutputStream(CONFIG_FILE)) {
             Properties properties = getProperties(configTable);
@@ -101,7 +101,7 @@ public class ConfigHandler {
     }
 
 
-    private void saveConfigToFile(JTable configTable) {
+    void saveConfigToFile(JTable configTable) {
         validateAndSortConfig();
         JFileChooser fileChooser = new JFileChooser();
         int option = fileChooser.showSaveDialog(null);
@@ -141,7 +141,7 @@ public class ConfigHandler {
         }
     }
 
-    private void validateAndSortConfig() {
+    void validateAndSortConfig() {
         // Normalize each entry's dimensions
         for (ConfigEntry entry : configEntries) {
             int[] dimensions = {entry.getLength(), entry.getWidth(), entry.getHeight()};
@@ -206,7 +206,7 @@ public class ConfigHandler {
     }
 
 
-    private void loadFile(File file) {
+    void loadFile(File file) {
         try (InputStream inputStream = new FileInputStream(file)) {
             Properties properties = new Properties();
             properties.load(inputStream);
@@ -233,7 +233,7 @@ public class ConfigHandler {
         }
     }
 
-    private static class ConfigTableModel extends AbstractTableModel {
+    static class ConfigTableModel extends AbstractTableModel {
 
         private final List<ConfigEntry> entries;
         private final String[] columnNames = {"Length (mm)", "Width (mm)", "Height (mm)", "Weight (g)", "Price (€)"};
