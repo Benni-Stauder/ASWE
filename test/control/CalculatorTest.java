@@ -1,7 +1,11 @@
 package control;
 
 import data.Packet;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.io.File;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
@@ -12,7 +16,15 @@ import static org.junit.jupiter.api.Assertions.*;
  */
 public class CalculatorTest {
 
-    private final Calculator calculator = new Calculator();
+    private Calculator calculator;
+
+    @BeforeEach
+    void setUp() {
+        calculator = new Calculator();
+        ConfigHandler configHandler = new ConfigHandler();
+        File defaultFile = new File("default.properties");
+        configHandler.loadFile(defaultFile);
+    }
 
     /**
      * Testet die Berechnung für ein kleines Päckchen (30x30x15, 1kg).

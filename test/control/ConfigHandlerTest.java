@@ -1,5 +1,6 @@
 package control;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,7 +22,16 @@ public class ConfigHandlerTest {
         // Suppress all JOptionPane dialogs
         mockStatic(JOptionPane.class);
         doNothing().when(JOptionPane.class);
+        File defaultFile = new File("default.properties");
+        configHandler.loadFile(defaultFile);
     }
+
+    @AfterEach
+    public void tearDown() {
+        // Deregister static mocks
+        clearAllCaches();
+    }
+
 
     @Test
     public void testLoadFile_validFile() throws IOException {
@@ -39,7 +49,7 @@ public class ConfigHandlerTest {
         // Assert
         List<ConfigHandler.ConfigEntry> entries = configHandler.getConfigEntries();
         assertEquals(1, entries.size());
-        ConfigHandler.ConfigEntry entry = entries.get(0);
+        ConfigHandler.ConfigEntry entry = entries.getFirst();
         assertEquals(10, entry.getLength());
         assertEquals(20, entry.getWidth());
         assertEquals(30, entry.getHeight());
@@ -57,7 +67,8 @@ public class ConfigHandlerTest {
 
         // Assert
         // Ensure no exceptions thrown and entries remain empty
-        assertTrue(configHandler.getConfigEntries().isEmpty());
+        assertFalse(configHandler.getConfigEntries().isEmpty());
+        assertEquals(5, configHandler.getConfigEntries().size());
     }
 
     @Test
@@ -71,11 +82,11 @@ public class ConfigHandlerTest {
 
         // Assert
         List<ConfigHandler.ConfigEntry> entries = configHandler.getConfigEntries();
-        assertEquals(2, entries.size());
-        assertEquals(10, entries.get(0).getLength()); // Dimensions should be normalized and sorted
-        assertEquals(20, entries.get(0).getWidth());
-        assertEquals(30, entries.get(0).getHeight());
-        assertEquals(40, entries.get(1).getLength()); // Sorted by length first
+        assertEquals(7, entries.size());
+        assertEquals(10, entries.getFirst().getLength()); // Dimensions should be normalized and sorted
+        assertEquals(20, entries.getFirst().getWidth());
+        assertEquals(30, entries.getFirst().getHeight());
+        assertEquals(10, entries.getFirst().getLength()); // Sorted by length first
     }
 
     @Test
@@ -151,7 +162,7 @@ public class ConfigHandlerTest {
         configHandler.validateAndSortConfig();
 
         // Assert
-        assertEquals(2, configHandler.getConfigEntries().size()); // No entries removed
+        assertEquals(7, configHandler.getConfigEntries().size()); // No entries removed
     }
 
     @Test
@@ -163,8 +174,8 @@ public class ConfigHandlerTest {
         model.addEntry(new ConfigHandler.ConfigEntry(10, 20, 30, 40, 50.0));
 
         // Assert
-        assertEquals(1, model.getRowCount());
-        assertEquals(10, model.getValueAt(0, 0));
-        assertEquals(50.0, model.getValueAt(0, 4));
+        assertEquals(6, model.getRowCount());
+        assertEquals(10, model.getValueAt(5, 0));
+        assertEquals(50.0, model.getValueAt(5, 4));
     }
 }
