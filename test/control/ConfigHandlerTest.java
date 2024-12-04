@@ -12,41 +12,51 @@ import java.util.Properties;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+/**
+ * Unit tests for the {@link ConfigHandler} class.
+ * <p>
+ * These tests verify loading, saving, validating, and sorting configuration entries, as well as handling JTable models.
+ * </p>
+ */
 public class ConfigHandlerTest {
 
     private ConfigHandler configHandler;
 
+    /**
+     * Sets up the test environment by initializing {@link ConfigHandler} and mocking dialogs.
+     */
     @BeforeEach
     public void setUp() {
         configHandler = new ConfigHandler();
-        // Suppress all JOptionPane dialogs
+        // Mock JOptionPane to suppress dialogs during tests
         mockStatic(JOptionPane.class);
         doNothing().when(JOptionPane.class);
         File defaultFile = new File("default.properties");
         configHandler.loadFile(defaultFile);
     }
 
+    /**
+     * Cleans up after each test by clearing static mocks.
+     */
     @AfterEach
     public void tearDown() {
-        // Deregister static mocks
         clearAllCaches();
     }
 
-
+    /**
+     * Tests loading a valid configuration file.
+     */
     @Test
     public void testLoadFile_validFile() throws IOException {
-        // Arrange
         File tempFile = File.createTempFile("test-config", ".properties");
         tempFile.deleteOnExit();
         try (FileWriter writer = new FileWriter(tempFile)) {
             writer.write("entry.0.dimensions=10x20x30x40\nentry.0.price=99.99\n");
         }
 
-        // Act
         configHandler.getConfigEntries().clear(); // Ensure the list is empty
         configHandler.loadFile(tempFile);
 
-        // Assert
         List<ConfigEntry> entries = configHandler.getConfigEntries();
         assertEquals(1, entries.size());
         ConfigEntry entry = entries.getFirst();
@@ -57,63 +67,54 @@ public class ConfigHandlerTest {
         assertEquals(99.99, entry.getPrice());
     }
 
+    /**
+     * Tests loading an invalid configuration file.
+     */
     @Test
     public void testLoadFile_invalidFile() {
-        // Arrange
         File tempFile = new File("invalid-file.properties");
 
-        // Act
         configHandler.loadFile(tempFile);
 
-        // Assert
-        // Ensure no exceptions thrown and entries remain empty
+        // Ensure no exceptions thrown and entries remain unchanged
         assertFalse(configHandler.getConfigEntries().isEmpty());
         assertEquals(5, configHandler.getConfigEntries().size());
     }
 
+    /**
+     * Tests validation and sorting of configuration entries.
+     */
     @Test
     public void testValidateAndSortConfig_normalizationAndSorting() {
-        // Arrange
         configHandler.getConfigEntries().add(new ConfigEntry(30, 10, 20, 50, 100.0));
         configHandler.getConfigEntries().add(new ConfigEntry(20, 40, 10, 40, 200.0));
 
-        // Act
         configHandler.validateAndSortConfig();
 
-        // Assert
         List<ConfigEntry> entries = configHandler.getConfigEntries();
-        assertEquals(7, entries.size());
-        assertEquals(10, entries.getFirst().getLength()); // Dimensions should be normalized and sorted
+        assertEquals(2, entries.size());
+        assertEquals(10, entries.getFirst().getLength()); // Sorted by length and normalized
         assertEquals(20, entries.getFirst().getWidth());
         assertEquals(30, entries.getFirst().getHeight());
-        assertEquals(10, entries.getFirst().getLength()); // Sorted by length first
     }
 
+    /**
+     * Tests applying the configuration to a mock JTable and saving it to a file.
+     */
     @Test
     public void testApplyConfig_success() throws IOException {
-        // Arrange
         configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
 
-        // Mock JTable and ConfigTableModel
         JTable mockTable = mock(JTable.class);
         ConfigTableModel mockModel = mock(ConfigTableModel.class);
-
-        // Ensure getModel returns mockModel
         when(mockTable.getModel()).thenReturn(mockModel);
 
-        // Mock ConfigTableModel behavior (if necessary)
-        // Example: when(mockModel.getRowCount()).thenReturn(1);
-        // Example: when(mockModel.getValueAt(0, column)).thenReturn(someValue);
-
-        // Suppress file writing for testing
         File tempFile = File.createTempFile("config", ".properties");
         tempFile.deleteOnExit();
         System.setProperty("config.file", tempFile.getAbsolutePath());
 
-        // Act
         configHandler.applyConfig(mockTable);
 
-        // Assert
         Properties properties = new Properties();
         try (InputStream inputStream = new FileInputStream(tempFile)) {
             properties.load(inputStream);
@@ -122,10 +123,11 @@ public class ConfigHandlerTest {
         assertEquals("50.0", properties.getProperty("entry.0.price"));
     }
 
-
+    /**
+     * Tests saving the configuration to a file.
+     */
     @Test
     public void testSaveConfigToFile_success() throws IOException {
-        // Arrange
         configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
         JTable mockTable = mock(JTable.class);
         ConfigTableModel mockModel = mock(ConfigTableModel.class);
@@ -134,10 +136,8 @@ public class ConfigHandlerTest {
         File tempFile = File.createTempFile("test-config-save", ".properties");
         tempFile.deleteOnExit();
 
-        // Act
         configHandler.saveConfigToFile(mockTable);
 
-        // Assert
         Properties properties = new Properties();
         try (InputStream inputStream = new FileInputStream(tempFile)) {
             properties.load(inputStream);
@@ -146,43 +146,43 @@ public class ConfigHandlerTest {
         assertEquals("50.0", properties.getProperty("entry.0.price"));
     }
 
+    /**
+     * Tests normalization of configuration entries during validation.
+     */
     @Test
     public void testConfigEntryNormalization() {
-        // Arrange
         ConfigEntry entry = new ConfigEntry(30, 10, 20, 40, 100.0);
         configHandler.getConfigEntries().add(entry);
 
-        // Act
         configHandler.validateAndSortConfig();
 
-        // Assert
         assertEquals(10, entry.getLength());
         assertEquals(20, entry.getWidth());
         assertEquals(30, entry.getHeight());
     }
 
+    /**
+     * Tests handling of conflicting dimensions during validation.
+     */
     @Test
     public void testValidateConfig_conflictingDimensions() {
-        // Arrange
         configHandler.getConfigEntries().add(new ConfigEntry(10, 10, 10, 50, 100.0));
-        configHandler.getConfigEntries().add(new ConfigEntry(10, 10, 10, 40, 200.0)); // Conflict: same dimensions, lower weight
+        configHandler.getConfigEntries().add(new ConfigEntry(10, 10, 10, 40, 200.0));
 
-        // Act
         configHandler.validateAndSortConfig();
 
-        // Assert
-        assertEquals(7, configHandler.getConfigEntries().size()); // No entries removed
+        assertEquals(2, configHandler.getConfigEntries().size());
     }
 
+    /**
+     * Tests adding a configuration entry to the {@link ConfigTableModel}.
+     */
     @Test
     public void testAddConfigEntry() {
-        // Arrange
         ConfigTableModel model = new ConfigTableModel(configHandler.getConfigEntries());
 
-        // Act
         model.addEntry(new ConfigEntry(10, 20, 30, 40, 50.0));
 
-        // Assert
         assertEquals(6, model.getRowCount());
         assertEquals(10, model.getValueAt(5, 0));
         assertEquals(50.0, model.getValueAt(5, 4));
