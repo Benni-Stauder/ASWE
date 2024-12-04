@@ -7,22 +7,40 @@ import java.awt.event.ActionListener;
 import java.util.List;
 
 import control.Calculator;
-import data.Packet;
+import control.ConfigEntry;
 import control.ConfigHandler;
+import data.Packet;
 
+/**
+ * PackageCalculator is a GUI-based application to calculate package shipping costs.
+ * It includes features for managing configurations, displaying package cost info, and performing calculations.
+ *
+ * <p>This class is the main entry point of the application.</p>
+ */
 public class PackageCalculator {
 
 	private JLabel resultLabel;
 	private final ConfigHandler configHandler;
 
+	/**
+	 * Main entry point of the application.
+	 *
+	 * @param args Command-line arguments
+	 */
 	public static void main(String[] args) {
 		SwingUtilities.invokeLater(() -> new PackageCalculator().createAndShowGUI());
 	}
 
+	/**
+	 * Constructs a new PackageCalculator instance.
+	 */
 	public PackageCalculator() {
 		this.configHandler = new ConfigHandler();
 	}
 
+	/**
+	 * Creates and displays the main GUI of the application.
+	 */
 	private void createAndShowGUI() {
 		JFrame frame = new JFrame("Package Cost Calculator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -30,34 +48,37 @@ public class PackageCalculator {
 		frame.setMinimumSize(new Dimension(600, 450));
 		frame.setLayout(new BorderLayout());
 
-		// Add components to frame
-		JToolBar toolBar = createToolBar();
-		frame.add(toolBar, BorderLayout.NORTH);
-
-		JPanel inputPanel = createInputPanel();
-		frame.add(inputPanel, BorderLayout.CENTER);
+		// Add components to the frame
+		frame.add(createToolBar(), BorderLayout.NORTH);
+		frame.add(createInputPanel(), BorderLayout.CENTER);
 
 		frame.setVisible(true);
 	}
 
+	/**
+	 * Creates the top toolbar with buttons for various actions.
+	 *
+	 * @return The toolbar component
+	 */
 	private JToolBar createToolBar() {
 		JToolBar toolBar = initializeToolBar();
-		JButton configButton = createToolbarButton("Config", "src/gui/pictures/config.png", this::showConfigMenu);
-		JButton infoButton = createToolbarButton("Info", "src/gui/pictures/info.png", this::showPackageCosts);
-		JButton aboutButton = createToolbarButton("About", "src/gui/pictures/about.png", this::showAboutDialog);
-		JButton exitButton = createToolbarButton("Exit", "src/gui/pictures/exit.png", _ -> System.exit(0));
 
-		toolBar.add(configButton);
+		toolBar.add(createToolbarButton("Config", "src/gui/pictures/config.png", this::showConfigMenu));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(infoButton);
+		toolBar.add(createToolbarButton("Info", "src/gui/pictures/info.png", this::showPackageCosts));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(aboutButton);
+		toolBar.add(createToolbarButton("About", "src/gui/pictures/about.png", this::showAboutDialog));
 		toolBar.add(Box.createHorizontalGlue());
-		toolBar.add(exitButton);
+		toolBar.add(createToolbarButton("Exit", "src/gui/pictures/exit.png", e -> System.exit(0)));
 
 		return toolBar;
 	}
 
+	/**
+	 * Initializes the toolbar with basic properties.
+	 *
+	 * @return A configured JToolBar instance
+	 */
 	private JToolBar initializeToolBar() {
 		JToolBar toolBar = new JToolBar();
 		toolBar.setFloatable(false);
@@ -66,8 +87,16 @@ public class PackageCalculator {
 		return toolBar;
 	}
 
+	/**
+	 * Creates a button for the toolbar with the specified properties.
+	 *
+	 * @param text       The button text
+	 * @param iconPath   The path to the icon image
+	 * @param action     The action listener for the button
+	 * @return The created JButton instance
+	 */
 	private JButton createToolbarButton(String text, String iconPath, ActionListener action) {
-		JButton button = new JButton(text, loadAndScaleIcon(iconPath)); // Set the scaled icon
+		JButton button = new JButton(text, loadAndScaleIcon(iconPath));
 		button.setFont(new Font("SansSerif", Font.BOLD, 14));
 		button.setBackground(new Color(30, 144, 255));
 		button.setForeground(Color.WHITE);
@@ -77,19 +106,30 @@ public class PackageCalculator {
 		return button;
 	}
 
+	/**
+	 * Loads and scales an image icon.
+	 *
+	 * @param path The path to the image file
+	 * @return A scaled ImageIcon instance
+	 */
 	private ImageIcon loadAndScaleIcon(String path) {
 		ImageIcon icon = new ImageIcon(path);
-		Image scaledImage = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH); // Scale the image
+		Image scaledImage = icon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
 		return new ImageIcon(scaledImage);
 	}
 
+	/**
+	 * Displays the configuration menu.
+	 *
+	 * @param e The action event
+	 */
 	private void showConfigMenu(ActionEvent e) {
 		JPopupMenu configMenu = new JPopupMenu();
 		JMenuItem loadConfigItem = new JMenuItem("Load Config");
 		JMenuItem createConfigItem = new JMenuItem("Edit Config");
 
-		loadConfigItem.addActionListener(_ -> configHandler.openLoadConfigWindow());
-		createConfigItem.addActionListener(_ -> configHandler.openCreateConfigWindow());
+		loadConfigItem.addActionListener(evt -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(evt -> configHandler.openCreateConfigWindow());
 
 		configMenu.add(loadConfigItem);
 		configMenu.add(createConfigItem);
@@ -98,28 +138,44 @@ public class PackageCalculator {
 		configMenu.show(sourceButton, 0, sourceButton.getHeight());
 	}
 
+	/**
+	 * Displays the configured package costs in a dialog.
+	 *
+	 * @param e The action event
+	 */
 	public void showPackageCosts(ActionEvent e) {
-		List<ConfigHandler.ConfigEntry> configEntries = configHandler.getConfigEntries();
+		List<ConfigEntry> configEntries = configHandler.getConfigEntries();
+
 		if (configEntries.isEmpty()) {
 			JOptionPane.showMessageDialog(null, "No package costs configured.", "Package Costs", JOptionPane.INFORMATION_MESSAGE);
 			return;
 		}
 
 		StringBuilder costsInfo = new StringBuilder("Package Costs:\n");
-        for (ConfigHandler.ConfigEntry entry : configEntries) {
-            costsInfo.append(String.format(
-                    "Dimensions %dx%dx%dx%d mm, Price: €%.2f\n",
-                    entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
-            ));
-        }
+		for (ConfigEntry entry : configEntries) {
+			costsInfo.append(String.format(
+					"Dimensions %dx%dx%d mm, Weight: %d g, Price: €%.2f\n",
+					entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
+			));
+		}
 
 		JOptionPane.showMessageDialog(null, costsInfo.toString(), "Package Costs", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * Displays the "About" dialog.
+	 *
+	 * @param e The action event
+	 */
 	private void showAboutDialog(ActionEvent e) {
 		JOptionPane.showMessageDialog(null, "Package Cost Calculator\n© 2024 Benni", "About", JOptionPane.INFORMATION_MESSAGE);
 	}
 
+	/**
+	 * Creates the input panel for package dimensions and weight.
+	 *
+	 * @return The input panel component
+	 */
 	private JPanel createInputPanel() {
 		JPanel inputPanel = new JPanel();
 		inputPanel.setLayout(new GridBagLayout());
@@ -135,11 +191,9 @@ public class PackageCalculator {
 		JTextField heightField = addLabeledTextField(inputPanel, gbc, 2, "Height (mm):");
 		JTextField weightField = addLabeledTextField(inputPanel, gbc, 3, "Weight (g):");
 
-		JButton calculateButton = createCalculateButton(lengthField, widthField, heightField, weightField);
-		gbc.gridx = 0;
 		gbc.gridy = 4;
 		gbc.gridwidth = 2;
-		inputPanel.add(calculateButton, gbc);
+		inputPanel.add(createCalculateButton(lengthField, widthField, heightField, weightField), gbc);
 
 		resultLabel = new JLabel(" ");
 		resultLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -151,6 +205,15 @@ public class PackageCalculator {
 		return inputPanel;
 	}
 
+	/**
+	 * Adds a labeled text field to the specified panel.
+	 *
+	 * @param panel     The target panel
+	 * @param gbc       The layout constraints
+	 * @param row       The row index
+	 * @param labelText The label text
+	 * @return The created JTextField instance
+	 */
 	private JTextField addLabeledTextField(JPanel panel, GridBagConstraints gbc, int row, String labelText) {
 		gbc.gridx = 0;
 		gbc.gridy = row;
@@ -163,6 +226,15 @@ public class PackageCalculator {
 		return textField;
 	}
 
+	/**
+	 * Creates the "Calculate Price" button and its associated action listener.
+	 *
+	 * @param lengthField The length input field
+	 * @param widthField  The width input field
+	 * @param heightField The height input field
+	 * @param weightField The weight input field
+	 * @return The created JButton instance
+	 */
 	private JButton createCalculateButton(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		JButton calculateButton = new JButton("Calculate Price");
 		calculateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -171,12 +243,20 @@ public class PackageCalculator {
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		calculateButton.addActionListener(_ -> calculateButtonParser(lengthField, widthField, heightField, weightField));
+		calculateButton.addActionListener(e -> calculateShippingCost(lengthField, widthField, heightField, weightField));
 
 		return calculateButton;
 	}
 
-	private void calculateButtonParser(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
+	/**
+	 * Parses input fields, calculates the shipping cost, and updates the result label.
+	 *
+	 * @param lengthField The length input field
+	 * @param widthField  The width input field
+	 * @param heightField The height input field
+	 * @param weightField The weight input field
+	 */
+	private void calculateShippingCost(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		try {
 			int length = Integer.parseInt(lengthField.getText());
 			int width = Integer.parseInt(widthField.getText());

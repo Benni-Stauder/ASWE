@@ -7,76 +7,126 @@ import java.util.Arrays;
 import java.util.Properties;
 
 /**
- * Die Klasse Calculator berechnet die Versandkosten basierend auf den Dimensionen und dem Gewicht eines Pakets.
- * Die Versandkosten werden aus einer Konfigurationsdatei geladen.
+ * The Calculator class calculates the shipping costs based on the dimensions and weight of a package.
+ * Shipping rates are loaded from a configuration file.
  *
  * @author Benni
- * @version 2.0
+ * @version 2.1
  */
 public class Calculator {
 
 	private static final String CONFIG_FILE = "config.properties";
 
 	/**
-	 * Berechnet die Versandkosten eines Pakets basierend auf Dimensionen und Gewicht.
+	 * Calculates the shipping costs for a package based on its dimensions and weight.
 	 *
-	 * @param pack Das Paket mit Länge, Breite, Höhe und Gewicht.
-	 * @return Die berechneten Versandkosten.
-	 * @throws IllegalArgumentException, wenn ungültige Eingaben gemacht werden.
+	 * @param pack The package containing length, width, height, and weight.
+	 * @return The calculated shipping cost.
+	 * @throws IllegalArgumentException if the package dimensions or weight are invalid.
 	 */
 	public static double calcShippingCosts(Packet pack) {
-		// Defensiv: Prüfen auf ungültige Eingaben
+		validatePackageDimensions(pack);
+
+		int girth = calculateGirth(pack);
+
+		if (girth > 300) { // Adjusted to cm for realistic girth constraints
+			throw new IllegalArgumentException("The girth of the package must not exceed 300 cm.");
+		}
+
+		Properties properties = loadConfigFile();
+
+		int[] sortedDimensions = getSortedDimensions(pack);
+
+		return calculateCostFromConfig(properties, sortedDimensions, pack.weight);
+	}
+
+	/**
+	 * Validates the package dimensions and weight.
+	 *
+	 * @param pack The package to validate.
+	 * @throws IllegalArgumentException if any dimension or weight is less than or equal to zero.
+	 */
+	private static void validatePackageDimensions(Packet pack) {
 		if (pack.length <= 0 || pack.width <= 0 || pack.height <= 0 || pack.weight <= 0) {
-			throw new IllegalArgumentException("Alle Dimensionen und das Gewicht müssen positiv sein.");
+			throw new IllegalArgumentException("All dimensions and weight must be positive.");
 		}
+	}
 
-		// Berechnung des Gurtmaßes (L + 2xB + 2xH)
-		int girth = pack.length + 2 * pack.width + 2 * pack.height;
+	/**
+	 * Calculates the girth of the package.
+	 *
+	 * @param pack The package.
+	 * @return The calculated girth.
+	 */
+	private static int calculateGirth(Packet pack) {
+		return pack.length + 2 * pack.width + 2 * pack.height;
+	}
 
-		// Defensiv: Prüfen auf unrealistische Werte
-		if (girth > 3000) {
-			throw new IllegalArgumentException("Das Gurtmaß darf 300 cm nicht überschreiten.");
-		}
-
-		// Laden der Versandkosten aus der Konfigurationsdatei
+	/**
+	 * Loads the configuration file containing shipping cost rules.
+	 *
+	 * @return A Properties object containing the loaded configuration.
+	 * @throws RuntimeException if the configuration file cannot be loaded.
+	 */
+	private static Properties loadConfigFile() {
 		Properties properties = new Properties();
 		try (FileInputStream inputStream = new FileInputStream(CONFIG_FILE)) {
 			properties.load(inputStream);
 		} catch (IOException e) {
-			throw new RuntimeException("Fehler beim Laden der Konfigurationsdatei: " + e.getMessage());
+			throw new RuntimeException("Error loading configuration file: " + e.getMessage());
 		}
+		return properties;
+	}
 
-		// Sortieren der Dimensionen des Pakets nach Größe
-		int[] packDimensions = {pack.length, pack.width, pack.height};
+	/**
+	 * Retrieves and sorts the package dimensions in ascending order.
+	 *
+	 * @param pack The package.
+	 * @return An array of sorted dimensions.
+	 */
+	private static int[] getSortedDimensions(Packet pack) {
+		int[] dimensions = {pack.length, pack.width, pack.height};
+		Arrays.sort(dimensions);
+		return dimensions;
+	}
 
-		// Dimensionen sortieren
-		Arrays.sort(packDimensions);
-
-		// Porto-Berechnung basierend auf den Regeln aus der Konfigurationsdatei
+	/**
+	 * Calculates the shipping cost based on the configuration file rules.
+	 *
+	 * @param properties      The configuration properties.
+	 * @param sortedDimensions The package dimensions sorted in ascending order.
+	 * @param weight          The package weight.
+	 * @return The calculated shipping cost.
+	 * @throws IllegalArgumentException if no suitable rate is found in the configuration.
+	 */
+	private static double calculateCostFromConfig(Properties properties, int[] sortedDimensions, int weight) {
 		for (int i = 0; ; i++) {
-			String dimensions = properties.getProperty("entry." + i + ".dimensions");
-			String priceStr = properties.getProperty("entry." + i + ".price");
+			String dimensionsKey = "entry." + i + ".dimensions";
+			String priceKey = "entry." + i + ".price";
+
+			String dimensions = properties.getProperty(dimensionsKey);
+			String priceStr = properties.getProperty(priceKey);
 
 			if (dimensions == null || priceStr == null) {
-				break; // Ende der Konfigurationsdatei erreicht
+				break; // End of configuration entries
 			}
 
-			String[] parts = dimensions.split("x");
-			if (parts.length != 4) {
-				throw new RuntimeException("Ungültiges Format in der Konfigurationsdatei für entry." + i);
+			String[] limits = dimensions.split("x");
+			if (limits.length != 4) {
+				throw new RuntimeException("Invalid format in configuration file for entry: " + dimensionsKey);
 			}
 
-			int lengthLimit = Integer.parseInt(parts[0]);
-			int widthLimit = Integer.parseInt(parts[1]);
-			int heightLimit = Integer.parseInt(parts[2]);
-			int weightLimit = Integer.parseInt(parts[3]);
+			int lengthLimit = Integer.parseInt(limits[0]);
+			int widthLimit = Integer.parseInt(limits[1]);
+			int heightLimit = Integer.parseInt(limits[2]);
+			int weightLimit = Integer.parseInt(limits[3]);
 
-			if (packDimensions[0] <= lengthLimit && packDimensions[1] <= widthLimit && packDimensions[2] <= heightLimit && pack.weight <= weightLimit) {
+			if (sortedDimensions[0] <= lengthLimit && sortedDimensions[1] <= widthLimit &&
+					sortedDimensions[2] <= heightLimit && weight <= weightLimit) {
 				return Double.parseDouble(priceStr);
 			}
 		}
 
-		// Kein passender Tarif gefunden
-		throw new IllegalArgumentException("Das Paket überschreitet die zulässigen Maße oder das Gewicht.");
+		throw new IllegalArgumentException("The package exceeds the allowed dimensions or weight.");
 	}
 }

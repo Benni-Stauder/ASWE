@@ -47,9 +47,9 @@ public class ConfigHandlerTest {
         configHandler.loadFile(tempFile);
 
         // Assert
-        List<ConfigHandler.ConfigEntry> entries = configHandler.getConfigEntries();
+        List<ConfigEntry> entries = configHandler.getConfigEntries();
         assertEquals(1, entries.size());
-        ConfigHandler.ConfigEntry entry = entries.getFirst();
+        ConfigEntry entry = entries.getFirst();
         assertEquals(10, entry.getLength());
         assertEquals(20, entry.getWidth());
         assertEquals(30, entry.getHeight());
@@ -74,14 +74,14 @@ public class ConfigHandlerTest {
     @Test
     public void testValidateAndSortConfig_normalizationAndSorting() {
         // Arrange
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(30, 10, 20, 50, 100.0));
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(20, 40, 10, 40, 200.0));
+        configHandler.getConfigEntries().add(new ConfigEntry(30, 10, 20, 50, 100.0));
+        configHandler.getConfigEntries().add(new ConfigEntry(20, 40, 10, 40, 200.0));
 
         // Act
         configHandler.validateAndSortConfig();
 
         // Assert
-        List<ConfigHandler.ConfigEntry> entries = configHandler.getConfigEntries();
+        List<ConfigEntry> entries = configHandler.getConfigEntries();
         assertEquals(7, entries.size());
         assertEquals(10, entries.getFirst().getLength()); // Dimensions should be normalized and sorted
         assertEquals(20, entries.getFirst().getWidth());
@@ -92,10 +92,18 @@ public class ConfigHandlerTest {
     @Test
     public void testApplyConfig_success() throws IOException {
         // Arrange
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(10, 20, 30, 40, 50.0));
+        configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
+
+        // Mock JTable and ConfigTableModel
         JTable mockTable = mock(JTable.class);
-        ConfigHandler.ConfigTableModel mockModel = mock(ConfigHandler.ConfigTableModel.class);
+        ConfigTableModel mockModel = mock(ConfigTableModel.class);
+
+        // Ensure getModel returns mockModel
         when(mockTable.getModel()).thenReturn(mockModel);
+
+        // Mock ConfigTableModel behavior (if necessary)
+        // Example: when(mockModel.getRowCount()).thenReturn(1);
+        // Example: when(mockModel.getValueAt(0, column)).thenReturn(someValue);
 
         // Suppress file writing for testing
         File tempFile = File.createTempFile("config", ".properties");
@@ -114,12 +122,13 @@ public class ConfigHandlerTest {
         assertEquals("50.0", properties.getProperty("entry.0.price"));
     }
 
+
     @Test
     public void testSaveConfigToFile_success() throws IOException {
         // Arrange
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(10, 20, 30, 40, 50.0));
+        configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
         JTable mockTable = mock(JTable.class);
-        ConfigHandler.ConfigTableModel mockModel = mock(ConfigHandler.ConfigTableModel.class);
+        ConfigTableModel mockModel = mock(ConfigTableModel.class);
         when(mockTable.getModel()).thenReturn(mockModel);
 
         File tempFile = File.createTempFile("test-config-save", ".properties");
@@ -140,7 +149,7 @@ public class ConfigHandlerTest {
     @Test
     public void testConfigEntryNormalization() {
         // Arrange
-        ConfigHandler.ConfigEntry entry = new ConfigHandler.ConfigEntry(30, 10, 20, 40, 100.0);
+        ConfigEntry entry = new ConfigEntry(30, 10, 20, 40, 100.0);
         configHandler.getConfigEntries().add(entry);
 
         // Act
@@ -155,8 +164,8 @@ public class ConfigHandlerTest {
     @Test
     public void testValidateConfig_conflictingDimensions() {
         // Arrange
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(10, 10, 10, 50, 100.0));
-        configHandler.getConfigEntries().add(new ConfigHandler.ConfigEntry(10, 10, 10, 40, 200.0)); // Conflict: same dimensions, lower weight
+        configHandler.getConfigEntries().add(new ConfigEntry(10, 10, 10, 50, 100.0));
+        configHandler.getConfigEntries().add(new ConfigEntry(10, 10, 10, 40, 200.0)); // Conflict: same dimensions, lower weight
 
         // Act
         configHandler.validateAndSortConfig();
@@ -168,10 +177,10 @@ public class ConfigHandlerTest {
     @Test
     public void testAddConfigEntry() {
         // Arrange
-        ConfigHandler.ConfigTableModel model = new ConfigHandler.ConfigTableModel(configHandler.getConfigEntries());
+        ConfigTableModel model = new ConfigTableModel(configHandler.getConfigEntries());
 
         // Act
-        model.addEntry(new ConfigHandler.ConfigEntry(10, 20, 30, 40, 50.0));
+        model.addEntry(new ConfigEntry(10, 20, 30, 40, 50.0));
 
         // Assert
         assertEquals(6, model.getRowCount());
