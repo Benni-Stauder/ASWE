@@ -15,7 +15,7 @@ import java.util.Properties;
  */
 public class Calculator {
 
-	private static final String CONFIG_FILE = "config.properties";
+	private static final String CONFIG_FILE = "config.properties"; // default config file
 
 	/**
 	 * Calculates the shipping costs for a package based on its dimensions and weight.
@@ -25,8 +25,6 @@ public class Calculator {
 	 * @throws IllegalArgumentException if the package dimensions or weight are invalid.
 	 */
 	public static double calcShippingCosts(Packet pack) {
-		validatePackageDimensions(pack);
-
 		int girth = calculateGirth(pack);
 
 		if (girth > 300) { // Adjusted to cm for realistic girth constraints
@@ -38,18 +36,6 @@ public class Calculator {
 		int[] sortedDimensions = getSortedDimensions(pack);
 
 		return calculateCostFromConfig(properties, sortedDimensions, pack.weight());
-	}
-
-	/**
-	 * Validates the package dimensions and weight.
-	 *
-	 * @param pack The package to validate.
-	 * @throws IllegalArgumentException if any dimension or weight is less than or equal to zero.
-	 */
-	private static void validatePackageDimensions(Packet pack) {
-		if (pack.length() <= 0 || pack.width() <= 0 || pack.height() <= 0 || pack.weight() <= 0) {
-			throw new IllegalArgumentException("All dimensions and weight must be positive.");
-		}
 	}
 
 	/**

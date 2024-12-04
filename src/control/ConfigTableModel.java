@@ -10,7 +10,7 @@ import java.util.List;
 public class ConfigTableModel extends AbstractTableModel {
 
     private final List<ConfigEntry> entries;
-    private static final String[] COLUMN_NAMES = {"Length (cm)", "Width (cm)", "Height (cm)", "Weight (g)", "Price (€)"};
+    private static final String[] COLUMN_NAMES = {"Length (mm)", "Width (mm)", "Height (mm)", "Weight (g)", "Price (€)"};
 
     /**
      * Constructs a new ConfigTableModel with a list of configuration entries.

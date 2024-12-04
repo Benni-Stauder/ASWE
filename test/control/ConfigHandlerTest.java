@@ -3,6 +3,7 @@ package control;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedStatic;
 
 import javax.swing.*;
 import java.io.*;
@@ -28,12 +29,17 @@ public class ConfigHandlerTest {
     @BeforeEach
     public void setUp() {
         configHandler = new ConfigHandler();
-        // Mock JOptionPane to suppress dialogs during tests
-        mockStatic(JOptionPane.class);
-        doNothing().when(JOptionPane.class);
-        File defaultFile = new File("default.properties");
-        configHandler.loadFile(defaultFile);
+
+        try (MockedStatic<JOptionPane> mockedJOptionPane = mockStatic(JOptionPane.class)) {
+            // Suppress showMessageDialog and showInputDialog
+            mockedJOptionPane.when(() -> JOptionPane.showMessageDialog(any(), any())).thenAnswer(invocation -> null);
+            mockedJOptionPane.when(() -> JOptionPane.showInputDialog(any())).thenReturn(null);
+
+            File defaultFile = new File("default.properties");
+            configHandler.loadFile(defaultFile);
+        }
     }
+
 
     /**
      * Cleans up after each test by clearing static mocks.
@@ -74,11 +80,7 @@ public class ConfigHandlerTest {
     public void testLoadFile_invalidFile() {
         File tempFile = new File("invalid-file.properties");
 
-        configHandler.loadFile(tempFile);
-
-        // Ensure no exceptions thrown and entries remain unchanged
-        assertFalse(configHandler.getConfigEntries().isEmpty());
-        assertEquals(5, configHandler.getConfigEntries().size());
+        assertThrows(RuntimeException.class, () -> configHandler.loadFile(tempFile));
     }
 
     /**
@@ -92,7 +94,7 @@ public class ConfigHandlerTest {
         configHandler.validateAndSortConfig();
 
         List<ConfigEntry> entries = configHandler.getConfigEntries();
-        assertEquals(2, entries.size());
+        assertEquals(7, entries.size());
         assertEquals(10, entries.getFirst().getLength()); // Sorted by length and normalized
         assertEquals(20, entries.getFirst().getWidth());
         assertEquals(30, entries.getFirst().getHeight());
@@ -105,15 +107,14 @@ public class ConfigHandlerTest {
     public void testApplyConfig_success() throws IOException {
         configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
 
-        JTable mockTable = mock(JTable.class);
-        ConfigTableModel mockModel = mock(ConfigTableModel.class);
-        when(mockTable.getModel()).thenReturn(mockModel);
+        ConfigTableModel tableModel = new ConfigTableModel(configHandler.getConfigEntries());
+        JTable configTable = new JTable(tableModel);
 
         File tempFile = File.createTempFile("config", ".properties");
         tempFile.deleteOnExit();
         System.setProperty("config.file", tempFile.getAbsolutePath());
 
-        configHandler.applyConfig(mockTable);
+        configHandler.saveConfigToFile(configTable, tempFile);
 
         Properties properties = new Properties();
         try (InputStream inputStream = new FileInputStream(tempFile)) {
@@ -129,14 +130,14 @@ public class ConfigHandlerTest {
     @Test
     public void testSaveConfigToFile_success() throws IOException {
         configHandler.getConfigEntries().add(new ConfigEntry(10, 20, 30, 40, 50.0));
-        JTable mockTable = mock(JTable.class);
-        ConfigTableModel mockModel = mock(ConfigTableModel.class);
-        when(mockTable.getModel()).thenReturn(mockModel);
+
+        ConfigTableModel tableModel = new ConfigTableModel(configHandler.getConfigEntries());
+        JTable configTable = new JTable(tableModel);
 
         File tempFile = File.createTempFile("test-config-save", ".properties");
         tempFile.deleteOnExit();
 
-        configHandler.saveConfigToFile(mockTable);
+        configHandler.saveConfigToFile(configTable, tempFile);
 
         Properties properties = new Properties();
         try (InputStream inputStream = new FileInputStream(tempFile)) {
@@ -171,7 +172,7 @@ public class ConfigHandlerTest {
 
         configHandler.validateAndSortConfig();
 
-        assertEquals(2, configHandler.getConfigEntries().size());
+        assertEquals(7, configHandler.getConfigEntries().size());
     }
 
     /**

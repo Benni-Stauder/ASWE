@@ -70,7 +70,7 @@ public class ConfigHandler {
         addButton.addActionListener(_ -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
         JButton saveButton = new JButton("Save Config");
-        saveButton.addActionListener(_ -> saveConfigToFile(configTable));
+        saveButton.addActionListener(_ -> saveConfigToFile(configTable, null));
 
         JButton applyButton = new JButton("Apply Config");
         applyButton.addActionListener(_ -> applyConfig(configTable));
@@ -117,16 +117,22 @@ public class ConfigHandler {
      *
      * @param configTable The table displaying the configuration entries.
      */
-    void saveConfigToFile(JTable configTable) {
+    void saveConfigToFile(JTable configTable, File file) {
         try {
             validateAndSortConfig();
-            JFileChooser fileChooser = new JFileChooser();
-            int option = fileChooser.showSaveDialog(null);
-            if (option == JFileChooser.APPROVE_OPTION) {
-                File file = fileChooser.getSelectedFile();
+            if (file == null) {
+                JFileChooser fileChooser = new JFileChooser();
+                int option = fileChooser.showSaveDialog(null);
+                if (option == JFileChooser.APPROVE_OPTION) {
+                    file = fileChooser.getSelectedFile();
+                    Properties properties = extractPropertiesFromTable(configTable);
+                    savePropertiesToFile(properties, file);
+                    JOptionPane.showMessageDialog(null, "Configuration saved successfully.");
+                }
+            }
+            else {
                 Properties properties = extractPropertiesFromTable(configTable);
                 savePropertiesToFile(properties, file);
-                JOptionPane.showMessageDialog(null, "Configuration saved successfully.");
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error saving configuration: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
@@ -191,6 +197,7 @@ public class ConfigHandler {
                         price));
                 i++;
             }
+            savePropertiesToFile(properties, new File(CONFIG_FILE));
         } catch (Exception e) {
             throw new RuntimeException("Error loading file: " + e.getMessage());
         }

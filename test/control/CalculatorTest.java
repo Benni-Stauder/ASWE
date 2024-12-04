@@ -4,6 +4,7 @@ import data.Packet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import javax.swing.*;
 import java.io.File;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -82,9 +83,8 @@ public class CalculatorTest {
      */
     @Test
     public void testInvalidDimensions() {
-        Packet packet = new Packet(-1, 60, 60, 5000);
-        assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(packet),
-                "Negative dimensions should throw an exception.");
+        assertThrows(IllegalArgumentException.class, () -> new Packet(-1, 60, 60, 5000),
+                "Dimensions and weight must be greater than zero.");
     }
 
     /**
@@ -118,5 +118,21 @@ public class CalculatorTest {
         Packet packet = new Packet(120, 60, 60, 32000);
         assertThrows(IllegalArgumentException.class, () -> Calculator.calcShippingCosts(packet),
                 "Overweight packages should throw an exception.");
+    }
+
+    /**
+     * Verifies if an error is thrown on a corrupted config file
+     */
+    @Test
+    public void testWrongConfig() {
+        Packet packet = new Packet(120, 60, 60, 32000);
+        ConfigHandler configHandler = new ConfigHandler();
+        File wrongConfigFile = new File("test/control/wrongConfig.properties");
+        configHandler.loadFile(wrongConfigFile);
+        ConfigTableModel tableModel = new ConfigTableModel(configHandler.getConfigEntries());
+        JTable configTable = new JTable(tableModel);
+        File configFile = new File("config.properties");
+        configHandler.saveConfigToFile(configTable, configFile);
+        assertThrows(RuntimeException.class, () -> Calculator.calcShippingCosts(packet));
     }
 }
