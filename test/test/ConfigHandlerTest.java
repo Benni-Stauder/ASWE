@@ -35,7 +35,7 @@ public class ConfigHandlerTest {
 
         try (MockedStatic<JOptionPane> mockedJOptionPane = mockStatic(JOptionPane.class)) {
             // Suppress showMessageDialog and showInputDialog
-            mockedJOptionPane.when(() -> JOptionPane.showMessageDialog(any(), any())).thenAnswer(invocation -> null);
+            mockedJOptionPane.when(() -> JOptionPane.showMessageDialog(any(), any())).thenAnswer(_ -> null);
             mockedJOptionPane.when(() -> JOptionPane.showInputDialog(any())).thenReturn(null);
 
             File defaultFile = new File("default.properties");
