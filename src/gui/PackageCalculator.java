@@ -154,7 +154,7 @@ public class PackageCalculator {
 	}
 
 	/**
-	 * Displays configured package costs in a dialog.
+	 * Displays configured package costs in a table dialog.
 	 */
 	public void showPackageCosts() {
 		List<ConfigEntry> configEntries = configHandler.getConfigEntries();
@@ -164,15 +164,30 @@ public class PackageCalculator {
 			return;
 		}
 
-		StringBuilder costsInfo = new StringBuilder("Package Costs:\n");
-		for (ConfigEntry entry : configEntries) {
-			costsInfo.append(String.format(
-					"Dimensions %dx%dx%d mm, Weight: %d g, Price: €%.2f\n",
-					entry.getLength(), entry.getWidth(), entry.getHeight(), entry.getWeight(), entry.getPrice()
-			));
+		// Column names for the table
+		String[] columnNames = {"Length (mm)", "Width (mm)", "Height (mm)", "Weight (g)", "Price (€)"};
+
+		// Data for the table
+		Object[][] tableData = new Object[configEntries.size()][columnNames.length];
+		for (int i = 0; i < configEntries.size(); i++) {
+			ConfigEntry entry = configEntries.get(i);
+			tableData[i][0] = entry.getLength();
+			tableData[i][1] = entry.getWidth();
+			tableData[i][2] = entry.getHeight();
+			tableData[i][3] = entry.getWeight();
+			tableData[i][4] = String.format("%.2f", entry.getPrice());
 		}
 
-		JOptionPane.showMessageDialog(null, costsInfo.toString(), "Package Costs", JOptionPane.INFORMATION_MESSAGE);
+		// Create the table
+		JTable table = new JTable(tableData, columnNames);
+		table.setFillsViewportHeight(true);
+
+		// Add the table to a scroll pane
+		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setPreferredSize(new Dimension(600, 200));
+
+		// Display the table in a dialog
+		JOptionPane.showMessageDialog(null, scrollPane, "Package Costs", JOptionPane.INFORMATION_MESSAGE);
 	}
 
 	/**
