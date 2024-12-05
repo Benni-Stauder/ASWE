@@ -71,10 +71,13 @@ public class ConfigHandler {
         JButton addButton = new JButton("Add Config");
         addButton.addActionListener(_ -> tableModel.addEntry(new ConfigEntry(0, 0, 0, 0, 0.0)));
 
+        JButton deleteButton = new JButton("Delete Config");
+        deleteButton.addActionListener(_ -> removeConfig(configTable, tableModel));
+
         JButton saveButton = new JButton("Save Config");
         saveButton.addActionListener(_ -> saveConfigToFile(configTable, null));
 
-        JButton applyButton = new JButton("Apply Config");
+        JButton applyButton = new JButton("OK");
         applyButton.addActionListener(_ -> applyConfig(configTable));
 
         JButton cancelButton = new JButton("Cancel");
@@ -82,9 +85,10 @@ public class ConfigHandler {
 
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         buttonPanel.add(addButton);
+        buttonPanel.add(deleteButton);
         buttonPanel.add(saveButton);
-        buttonPanel.add(applyButton);
         buttonPanel.add(cancelButton);
+        buttonPanel.add(applyButton);
         return buttonPanel;
     }
 
@@ -98,6 +102,13 @@ public class ConfigHandler {
         }
     }
 
+    private void removeConfig(JTable configTable,ConfigTableModel tableModel) {
+        int selectedRow = configTable.getSelectedRow();
+        if (selectedRow != -1) {
+            tableModel.removeEntry(selectedRow);
+        }
+    }
+
     /**
      * Applies the current configuration to the default file.
      *
@@ -108,6 +119,7 @@ public class ConfigHandler {
             validateAndSortConfig();
             Properties properties = extractPropertiesFromTable(configTable);
             savePropertiesToFile(properties, new File(CONFIG_FILE));
+            configFrame.setVisible(false);
             JOptionPane.showMessageDialog(null, "Configuration applied successfully.");
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error applying configuration: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
