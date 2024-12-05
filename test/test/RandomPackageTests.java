@@ -2,11 +2,8 @@ package test;
 
 import control.Calculator;
 import data.Packet;
-import control.ConfigHandler;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.util.Arrays;
 import java.util.Random;
 import static org.junit.jupiter.api.Assertions.*;
@@ -20,14 +17,6 @@ import static org.junit.jupiter.api.Assertions.*;
 public class RandomPackageTests {
 
     private final Random random = new Random();
-
-    @BeforeEach
-    void setUp() {
-        ConfigHandler configHandler = new ConfigHandler();
-        File defaultConfig = new File("default.properties");
-        configHandler.loadFile(defaultConfig);
-    }
-
     /**
      * Testet 1000 zufällig generierte Pakete mit verschiedenen Größen und Gewichten.
      */

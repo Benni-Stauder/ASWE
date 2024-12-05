@@ -13,9 +13,8 @@ import data.Packet;
 
 /**
  * PackageCalculator is a GUI-based application to calculate package shipping costs.
- * It includes features for managing configurations, displaying package cost info, and performing calculations.
- *
- * <p>This class is the main entry point of the application.</p>
+ * It provides functionalities for managing configurations, displaying package cost information,
+ * and calculating shipping costs based on user input.
  */
 public class PackageCalculator {
 
@@ -35,20 +34,22 @@ public class PackageCalculator {
 	 * Constructs a new PackageCalculator instance.
 	 */
 	public PackageCalculator() {
-		this.configHandler = new ConfigHandler();
+		this.configHandler = new ConfigHandler("config.properties");
 	}
 
 	/**
-	 * Creates and displays the main GUI of the application.
+	 * Initializes and displays the main GUI of the application.
 	 */
 	private void createAndShowGUI() {
 		JFrame frame = new JFrame("Package Cost Calculator");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setSize(600, 450);
-		frame.setMinimumSize(new Dimension(600, 450));
+		frame.setSize(600, 600);
 		frame.setLayout(new BorderLayout());
+		frame.setMinimumSize(new Dimension(800, 600));
 
-		// Add components to the frame
+		// Set custom application icon
+		setApplicationIcon(frame);
+
 		frame.add(createToolBar(), BorderLayout.NORTH);
 		frame.add(createInputPanel(), BorderLayout.CENTER);
 
@@ -56,28 +57,42 @@ public class PackageCalculator {
 	}
 
 	/**
+	 * Sets a custom icon for the application window.
+	 *
+	 * @param frame The JFrame instance
+	 */
+	private void setApplicationIcon(JFrame frame) {
+		try {
+			Image icon = Toolkit.getDefaultToolkit().getImage("src/gui/pictures/packet.png");
+			frame.setIconImage(icon);
+		} catch (Exception e) {
+			System.err.println("Error setting application icon: " + e.getMessage());
+		}
+	}
+
+	/**
 	 * Creates the top toolbar with buttons for various actions.
 	 *
-	 * @return The toolbar component
+	 * @return A JToolBar component
 	 */
 	private JToolBar createToolBar() {
 		JToolBar toolBar = initializeToolBar();
 
 		toolBar.add(createToolbarButton("Config", "src/gui/pictures/config.png", this::showConfigMenu));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(createToolbarButton("Info", "src/gui/pictures/info.png", _ -> showPackageCosts()));
+		toolBar.add(createToolbarButton("Info", "src/gui/pictures/info.png", e -> showPackageCosts()));
 		toolBar.add(Box.createHorizontalStrut(10));
-		toolBar.add(createToolbarButton("About", "src/gui/pictures/about.png", _ -> showAboutDialog()));
+		toolBar.add(createToolbarButton("About", "src/gui/pictures/about.png", e -> showAboutDialog()));
 		toolBar.add(Box.createHorizontalGlue());
-		toolBar.add(createToolbarButton("Exit", "src/gui/pictures/exit.png", _ -> System.exit(0)));
+		toolBar.add(createToolbarButton("Exit", "src/gui/pictures/exit.png", e -> System.exit(0)));
 
 		return toolBar;
 	}
 
 	/**
-	 * Initializes the toolbar with basic properties.
+	 * Initializes the toolbar with default properties.
 	 *
-	 * @return A configured JToolBar instance
+	 * @return A configured JToolBar
 	 */
 	private JToolBar initializeToolBar() {
 		JToolBar toolBar = new JToolBar();
@@ -88,12 +103,12 @@ public class PackageCalculator {
 	}
 
 	/**
-	 * Creates a button for the toolbar with the specified properties.
+	 * Creates a toolbar button with specified properties.
 	 *
-	 * @param text       The button text
-	 * @param iconPath   The path to the icon image
-	 * @param action     The action listener for the button
-	 * @return The created JButton instance
+	 * @param text     Button text
+	 * @param iconPath Path to the icon
+	 * @param action   ActionListener for the button
+	 * @return A JButton instance
 	 */
 	private JButton createToolbarButton(String text, String iconPath, ActionListener action) {
 		JButton button = new JButton(text, loadAndScaleIcon(iconPath));
@@ -109,8 +124,8 @@ public class PackageCalculator {
 	/**
 	 * Loads and scales an image icon.
 	 *
-	 * @param path The path to the image file
-	 * @return A scaled ImageIcon instance
+	 * @param path Path to the image
+	 * @return A scaled ImageIcon
 	 */
 	private ImageIcon loadAndScaleIcon(String path) {
 		ImageIcon icon = new ImageIcon(path);
@@ -128,8 +143,8 @@ public class PackageCalculator {
 		JMenuItem loadConfigItem = new JMenuItem("Load Config");
 		JMenuItem createConfigItem = new JMenuItem("Edit Config");
 
-		loadConfigItem.addActionListener(_ -> configHandler.openLoadConfigWindow());
-		createConfigItem.addActionListener(_ -> configHandler.openCreateConfigWindow());
+		loadConfigItem.addActionListener(event -> configHandler.openLoadConfigWindow());
+		createConfigItem.addActionListener(event -> configHandler.openCreateConfigWindow());
 
 		configMenu.add(loadConfigItem);
 		configMenu.add(createConfigItem);
@@ -139,7 +154,7 @@ public class PackageCalculator {
 	}
 
 	/**
-	 * Displays the configured package costs in a dialog.
+	 * Displays configured package costs in a dialog.
 	 */
 	public void showPackageCosts() {
 		List<ConfigEntry> configEntries = configHandler.getConfigEntries();
@@ -170,11 +185,10 @@ public class PackageCalculator {
 	/**
 	 * Creates the input panel for package dimensions and weight.
 	 *
-	 * @return The input panel component
+	 * @return A JPanel component
 	 */
 	private JPanel createInputPanel() {
-		JPanel inputPanel = new JPanel();
-		inputPanel.setLayout(new GridBagLayout());
+		JPanel inputPanel = new JPanel(new GridBagLayout());
 		inputPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 		inputPanel.setBackground(new Color(245, 245, 245));
 
@@ -205,10 +219,10 @@ public class PackageCalculator {
 	 * Adds a labeled text field to the specified panel.
 	 *
 	 * @param panel     The target panel
-	 * @param gbc       The layout constraints
-	 * @param row       The row index
-	 * @param labelText The label text
-	 * @return The created JTextField instance
+	 * @param gbc       GridBagConstraints for layout
+	 * @param row       Row index
+	 * @param labelText Label text
+	 * @return A JTextField instance
 	 */
 	private JTextField addLabeledTextField(JPanel panel, GridBagConstraints gbc, int row, String labelText) {
 		gbc.gridx = 0;
@@ -223,23 +237,24 @@ public class PackageCalculator {
 	}
 
 	/**
-	 * Creates the "Calculate Price" button and its associated action listener.
+	 * Creates the "Calculate Price" button and attaches its action listener.
 	 *
-	 * @param lengthField The length input field
-	 * @param widthField  The width input field
-	 * @param heightField The height input field
-	 * @param weightField The weight input field
-	 * @return The created JButton instance
+	 * @param lengthField Input for length
+	 * @param widthField  Input for width
+	 * @param heightField Input for height
+	 * @param weightField Input for weight
+	 * @return A JButton instance
 	 */
 	private JButton createCalculateButton(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		JButton calculateButton = new JButton("Calculate Price");
 		calculateButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-		calculateButton.setBackground(new Color(0, 103, 200));
+		calculateButton.setBackground(new Color(30, 144, 255));
 		calculateButton.setFont(new Font("SansSerif", Font.BOLD, 16));
+		calculateButton.setForeground(Color.WHITE);
 		calculateButton.setFocusPainted(false);
 		calculateButton.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
 
-		calculateButton.addActionListener(_ -> calculateShippingCost(lengthField, widthField, heightField, weightField));
+		calculateButton.addActionListener(e -> calculateShippingCost(lengthField, widthField, heightField, weightField));
 
 		return calculateButton;
 	}
@@ -247,10 +262,10 @@ public class PackageCalculator {
 	/**
 	 * Parses input fields, calculates the shipping cost, and updates the result label.
 	 *
-	 * @param lengthField The length input field
-	 * @param widthField  The width input field
-	 * @param heightField The height input field
-	 * @param weightField The weight input field
+	 * @param lengthField Input for length
+	 * @param widthField  Input for width
+	 * @param heightField Input for height
+	 * @param weightField Input for weight
 	 */
 	private void calculateShippingCost(JTextField lengthField, JTextField widthField, JTextField heightField, JTextField weightField) {
 		try {

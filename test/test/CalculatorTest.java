@@ -6,7 +6,6 @@ import data.Packet;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
 import java.util.Properties;
 
 import static control.Calculator.calculateCostFromConfig;
@@ -26,9 +25,7 @@ public class CalculatorTest {
      */
     @BeforeEach
     void setUp() {
-        ConfigHandler configHandler = new ConfigHandler();
-        File defaultFile = new File("default.properties");
-        configHandler.loadFile(defaultFile);
+        new ConfigHandler("default.properties");
     }
 
     /**

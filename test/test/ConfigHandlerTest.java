@@ -31,7 +31,7 @@ public class ConfigHandlerTest {
      */
     @BeforeEach
     public void setUp() {
-        configHandler = new ConfigHandler();
+        configHandler = new ConfigHandler("config.properties");
 
         try (MockedStatic<JOptionPane> mockedJOptionPane = mockStatic(JOptionPane.class)) {
             // Suppress showMessageDialog and showInputDialog

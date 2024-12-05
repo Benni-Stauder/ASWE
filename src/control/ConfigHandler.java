@@ -20,10 +20,10 @@ public class ConfigHandler {
     /**
      * Constructor initializes the handler and loads configuration entries from the default file.
      */
-    public ConfigHandler() {
+    public ConfigHandler(String configFilePath) {
         configEntries = new ArrayList<>();
         try {
-            loadFile(new File(CONFIG_FILE));
+            loadFile(new File(configFilePath));
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Error loading configuration: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
         }
@@ -41,6 +41,8 @@ public class ConfigHandler {
         configFrame = new JFrame("Create Config");
         configFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         configFrame.setSize(600, 400);
+        configFrame.setMinimumSize(new Dimension(600, 400));
+        configFrame.setLocationRelativeTo(null);
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBorder(new EmptyBorder(10, 10, 10, 10));
